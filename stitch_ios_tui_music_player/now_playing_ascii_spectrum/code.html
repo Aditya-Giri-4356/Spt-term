@@ -1,0 +1,330 @@
+<!DOCTYPE html><html class="dark" lang="en"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><meta content="mobile_tab" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{width:100vw;margin:0;padding:0;background-color:#111411;color:#e1e3dd;font-family:'JetBrains Mono',monospace;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"outline-variant":"#3b4b3a","inverse-surface":"#e1e3dd","inverse-on-surface":"#2e312d","error-container":"#93000a","on-primary-container":"#007128","on-secondary-container":"#86bece","surface-container-low":"#191c19","tertiary-container":"#e9d6ff","on-secondary":"#003640","tertiary":"#fff8ff","surface-container-lowest":"#0c0f0c","surface-bright":"#373a36","on-background":"#e1e3dd","surface-container-highest":"#333632","surface-container":"#1d201d","inverse-primary":"#006e27","background":"#111411","on-surface":"#e1e3dd","on-primary-fixed-variant":"#00531b","on-tertiary":"#411478","on-primary-fixed":"#002107","primary-fixed-dim":"#00e55b","on-secondary-fixed-variant":"#094e5c","tertiary-fixed-dim":"#d7baff","primary-container":"#00ff66","tertiary-fixed":"#eddcff","surface-dim":"#111411","on-error-container":"#ffdad6","surface-container-high":"#282b27","secondary-container":"#094e5c","secondary":"#97cfe0","primary-fixed":"#6bff83","outline":"#849581","surface-tint":"#00e55b","on-surface-variant":"#b9ccb5","surface":"#111411","on-tertiary-container":"#744dad","primary":"#edffe8","secondary-fixed-dim":"#97cfe0","error":"#ffb4ab","on-primary":"#003911","secondary-fixed":"#b3ecfc","surface-variant":"#333632","on-error":"#690005","on-secondary-fixed":"#001f26","on-tertiary-fixed-variant":"#593090","on-tertiary-fixed":"#290055"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-md":"0.75rem","margin":"1rem","space-sm":"0.5rem","gutter":"0.75rem","space-xl":"1.5rem","space-lg":"1rem","space-xs":"0.25rem"},"fontFamily":{"label-lg":["JetBrains Mono"],"label-sm":["JetBrains Mono"],"body-md":["JetBrains Mono"],"headline-md":["JetBrains Mono"],"headline-lg-mobile":["JetBrains Mono"],"label-md":["JetBrains Mono"],"headline-lg":["JetBrains Mono"],"body-sm":["JetBrains Mono"],"body-lg":["JetBrains Mono"]},"fontSize":{"label-lg":["13px",{"lineHeight":"16px","letterSpacing":"0.05em","fontWeight":"600"}],"label-sm":["9px",{"lineHeight":"12px","letterSpacing":"0.08em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"headline-md":["18px",{"lineHeight":"24px","letterSpacing":"0em","fontWeight":"600"}],"headline-lg-mobile":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"700"}],"label-md":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"500"}],"headline-lg":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-sm":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"22px","letterSpacing":"0em","fontWeight":"500"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen selection:bg-primary-container selection:text-surface-container-lowest" style="font-family: Consolas, &quot;Courier New&quot;, monospace !important; background-color: rgb(0, 0, 0) !important; color: rgb(0, 255, 102) !important;"><style id="phosphor-mono-theme">* { border-radius: 0px !important; box-shadow: none !important; } html, body, main { background-color: #000000 !important; color: #00ff66 !important; } header { background-color: #000000 !important; border-bottom: 1px solid #00ff66 !important; } nav { background-color: #000000 !important; border-top: 1px solid #00ff66 !important; } .fixed.bottom-16 { background-color: #000000 !important; border-top: 1px solid #00ff66 !important; } div, button, pre, span, p, a, input { border-radius: 0px !important; } .bg-surface, .bg-surface-container, .bg-surface-container-low, .bg-surface-container-lowest, .bg-surface-container-high, .bg-surface-variant, .bg-secondary-container { background-color: #000000 !important; border-color: #00ff66 !important; } .border-outline-variant\/30, .border-b, .border-t { border-color: #00ff66 !important; } .text-secondary, .text-tertiary-fixed-dim, .text-on-surface-variant, .text-outline, .text-outline\/60, .text-outline\/50, .text-outline\/40, .text-primary, .text-primary-fixed, .text-primary-fixed-dim, .text-on-surface { color: #00ff66 !important; } .material-symbols-outlined { color: #00ff66 !important; } .bg-primary-container, a[aria-current="page"], #btn-play-pause { background-color: #00ff66 !important; color: #000000 !important; } .bg-primary-container *, a[aria-current="page"] *, #btn-play-pause * { color: #000000 !important; } .w-8.h-8.rounded-full.bg-primary { background-color: #00ff66 !important; border-radius: 0px !important; } .w-8.h-8.rounded-full.bg-primary span { color: #000000 !important; } input[type="range"] { accent-color: #00ff66 !important; } </style><header class="fixed top-0 inset-x-0 z-50 bg-surface/90 backdrop-blur-xl pt-safe shadow-[0_4px_20px_rgba(0,0,0,0.85)]"><div class="px-3 py-2 flex flex-col gap-1 w-full bg-surface"><div class="flex items-center justify-between text-on-surface-variant font-label-sm"><span class="tracking-wider text-primary-fixed-dim font-bold">[VOL: [████████░░]]</span><span class="text-secondary font-label-sm">[pts/0]</span></div><div class="flex items-center justify-between gap-2 border-b border-outline-variant/30 pb-1"><div class="flex items-center gap-2 min-w-0"><span class="text-primary-container font-bold text-headline-md tracking-wider uppercase truncate">spt.term v2.4.0</span><span class="text-primary-fixed-dim text-label-sm hidden sm:inline">:: Now Playing</span></div><div class="flex items-center gap-1 font-label-sm text-primary-container"><span class="text-label-sm">USER:</span><span class="text-primary font-bold">[root]</span></div></div><div class="flex items-center gap-2 overflow-x-auto no-scrollbar font-label-sm pt-0.5"><span class="text-on-surface-variant shrink-0">THEME:</span><button class="px-1.5 py-0.5 text-surface-container-lowest bg-primary-container font-bold shrink-0">[*Phosphor]</button><button class="px-1.5 py-0.5 text-primary border border-outline-variant/30 hover:bg-surface-bright shrink-0">[Nord]</button><button class="px-1.5 py-0.5 text-primary border border-outline-variant/30 hover:bg-surface-bright shrink-0">[Dracula]</button><button class="px-1.5 py-0.5 text-primary border border-outline-variant/30 hover:bg-surface-bright shrink-0">[Amber]</button></div></div></header><main class="flex flex-col relative w-full px-3 pt-28 pb-32 bg-surface min-h-screen"><div style="display: none; font-family: Consolas, &quot;Courier New&quot;, monospace !important;" aria-hidden="true"><style>*, pre, code, button, input, span, div, p, a { font-family: 'Consolas', 'Courier New', monospace !important; }</style></div><div class="flex flex-col w-full gap-space-md">
+<!-- TOP DECK: PID Header & Status Banner -->
+<div class="bg-surface-container-lowest rounded-lg p-space-sm shadow-md">
+<div class="flex items-center justify-between font-label-sm text-primary-fixed-dim border-b border-outline-variant/30 pb-space-xs mb-space-sm">
+<div class="flex items-center gap-space-xs truncate">
+<span class="inline-block w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="font-bold tracking-wider text-primary truncate">┌── [NOW PLAYING :: PID 4092]</span>
+</div>
+<span class="text-secondary shrink-0 font-label-sm">spt.term:~$</span>
+</div>
+<!-- Album Art & Core Stream Spec -->
+<div class="grid grid-cols-1 gap-space-md items-center">
+<!-- ASCII Art Box -->
+
+<!-- Telemetry Info Module -->
+<div class="flex flex-col gap-space-xs bg-surface-container rounded-lg p-space-sm justify-between self-stretch">
+<div class="flex flex-col">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline">
+<span>META_TAGS</span>
+<span class="text-secondary">[ID3v2.4]</span>
+</div>
+<div class="mt-1">
+<span class="text-label-sm font-label-sm text-on-surface-variant block uppercase tracking-wider">TRACK</span>
+<span class="text-headline-lg-mobile font-headline-lg-mobile text-primary tracking-wide block drop-shadow-[0_0_6px_rgba(237,255,232,0.5)] truncate">Resonance</span>
+</div>
+<div class="mt-1">
+<span class="text-label-sm font-label-sm text-on-surface-variant block uppercase tracking-wider">ARTIST</span>
+<span class="text-body-lg font-body-lg text-primary-fixed-dim truncate block">HOME</span>
+</div>
+<div class="mt-0.5">
+<span class="text-label-sm font-label-sm text-on-surface-variant block uppercase tracking-wider">ALBUM</span>
+<span class="text-body-md font-body-md text-on-surface truncate block">Odyssey (2014)</span>
+</div>
+</div>
+<div class="pt-space-xs border-t border-outline-variant/30 flex flex-col gap-1 text-label-sm font-label-sm">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>FORMAT:</span>
+<span class="text-primary-fixed font-bold">FLAC / 24-bit / 96kHz</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<span>BITRATE:</span>
+<span class="text-secondary">2840 kbps (lossless)</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant truncate">
+<span>SINK:</span>
+<span class="text-primary-fixed-dim truncate ml-2">AirPods Pro 2 [AAC-ELD]</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- REAL-TIME ASCII SPECTRUM ANALYZER -->
+<div class="bg-surface-container-lowest rounded-lg p-space-sm flex flex-col gap-space-xs shadow-md">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant border-b border-outline-variant/30 pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="text-primary-container font-bold">┌── [DSP :: SPECTRUM_FFT_1024]</span>
+<span class="inline-block px-1 rounded bg-secondary-container text-secondary text-label-sm">REALTIME</span>
+</div>
+<span class="text-outline text-label-sm">GAIN: +0.0dB</span>
+</div>
+<!-- Visualizer Canvas & ASCII Bars -->
+<div class="py-space-xs flex flex-col gap-1 overflow-hidden">
+<div class="h-14 flex items-end justify-between gap-1 px-space-xs bg-surface-container-low rounded-lg pb-1 overflow-hidden relative" id="spectrum-container">
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-0">█<br>█<br>▅<br></span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-1">█<br>▇<br></span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-2">█<br></span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-3">▄<br></span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-4">█<br>█<br>▃<br></span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-5">█<br>▄<br></span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-6">█<br></span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-7">▄<br></span>
+</div>
+<div class="flex-1 flex flex-col items-center justify-end h-full overflow-hidden">
+<span class="text-primary-container font-bold text-body-sm leading-none drop-shadow-[0_0_5px_rgba(0,255,102,0.8)]" id="bar-8">▂<br></span>
+</div>
+</div>
+<!-- Frequency X-Axis Ticks -->
+<div class="flex justify-between items-center text-outline font-label-sm px-1 overflow-x-hidden">
+<span class="truncate">60Hz</span>
+<span class="truncate">120Hz</span>
+<span class="truncate">250Hz</span>
+<span class="truncate">500Hz</span>
+<span class="truncate">1kHz</span>
+<span class="truncate">2kHz</span>
+<span class="truncate">4kHz</span>
+<span class="truncate">8kHz</span>
+<span class="truncate">16kHz</span>
+</div>
+</div>
+<!-- Peak dB Telemetry Meters -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs text-label-sm font-label-sm">
+<div class="flex items-center gap-1 bg-surface-container px-space-xs py-0.5 rounded">
+<span class="text-primary font-bold">L:</span>
+<span class="text-primary-container tracking-tighter truncate">[||||||||||||||||....]</span>
+<span class="text-secondary ml-auto">-4.2dB</span>
+</div>
+<div class="flex items-center gap-1 bg-surface-container px-space-xs py-0.5 rounded">
+<span class="text-primary font-bold">R:</span>
+<span class="text-primary-container tracking-tighter truncate">[||||||||||||||......]</span>
+<span class="text-secondary ml-auto">-6.8dB</span>
+</div>
+</div>
+</div>
+<!-- INTERACTIVE SCRUBBER / SEEK BAR -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex flex-col gap-space-xs shadow-md">
+<div class="flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-primary-fixed-dim">SEEK_CURSOR :: POS: 65.1%</span>
+<div class="flex gap-2">
+<span class="text-primary font-bold" id="current-time">02:18</span>
+<span class="text-outline">/</span>
+<span class="text-on-surface-variant">03:32</span>
+<span class="text-secondary font-label-sm">(-01:14)</span>
+</div>
+</div>
+<!-- Scrubber track container with touch hit-area -->
+<div class="relative w-full h-11 flex items-center cursor-pointer select-none bg-surface-container rounded-lg px-space-sm" id="scrubber-touch-zone">
+<div class="w-full flex items-center font-label-md tracking-tighter text-outline overflow-hidden">
+<span class="text-primary-container font-bold drop-shadow-[0_0_5px_rgba(0,255,102,0.9)] whitespace-nowrap" id="scrubber-fill">
+          [=============================&gt;
+        </span>
+<span class="text-outline whitespace-nowrap" id="scrubber-unfill">
+          --------------------]
+        </span>
+</div>
+<!-- Hidden Range Input for Accessibility & Direct Touch Manipulation -->
+<input aria-label="Seek track position" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" id="seek-slider" max="212" min="0" type="range" value="138">
+</div>
+</div>
+<!-- TOUCH TUI PRIMARY CONTROLS -->
+<div class="bg-surface-container-lowest rounded-lg p-space-sm flex flex-col gap-space-sm shadow-md">
+<!-- Primary transport line -->
+<div class="grid grid-cols-5 gap-space-xs items-center">
+<!-- Shuffle -->
+<button aria-label="Toggle Shuffle" class="min-h-[48px] px-space-xs flex flex-col items-center justify-center rounded-lg bg-surface-container text-primary-fixed-dim active:bg-primary-container active:text-surface-container-lowest transition-colors" id="btn-shuffle">
+<span class="text-label-md font-label-md font-bold">⤮</span>
+<span class="text-label-sm font-label-sm">SHUF</span>
+</button>
+<!-- Prev -->
+<button aria-label="Previous Track" class="min-h-[48px] px-space-xs flex items-center justify-center rounded-lg bg-surface-container text-primary active:bg-primary-container active:text-surface-container-lowest transition-colors" id="btn-prev">
+<span class="text-headline-md font-headline-md font-bold">⏮</span>
+</button>
+<!-- Play / Pause primary reversed button -->
+<button aria-label="Pause or Play" class="min-h-[48px] px-space-xs flex items-center justify-center rounded-lg bg-primary-container text-surface-container-lowest font-bold shadow-[0_0_15px_rgba(0,255,102,0.4)] active:scale-95 transition-transform" id="btn-play-pause">
+<span class="text-headline-md font-headline-md font-bold" id="play-glyph">❚❚</span>
+</button>
+<!-- Next -->
+<button aria-label="Next Track" class="min-h-[48px] px-space-xs flex items-center justify-center rounded-lg bg-surface-container text-primary active:bg-primary-container active:text-surface-container-lowest transition-colors" id="btn-next">
+<span class="text-headline-md font-headline-md font-bold">⏭</span>
+</button>
+<!-- Repeat -->
+<button aria-label="Repeat mode" class="min-h-[48px] px-space-xs flex flex-col items-center justify-center rounded-lg bg-surface-container text-primary-fixed-dim active:bg-primary-container active:text-surface-container-lowest transition-colors" id="btn-repeat">
+<span class="text-label-md font-label-md font-bold">⟲</span>
+<span class="text-label-sm font-label-sm">ALL</span>
+</button>
+</div>
+<!-- Secondary Shell Actions -->
+<div class="grid grid-cols-3 gap-space-xs pt-space-xs border-t border-outline-variant/30">
+<button class="min-h-[44px] px-space-xs py-1 flex items-center justify-center gap-1 rounded bg-surface-container text-on-surface font-label-sm hover:text-primary active:bg-surface-bright transition-colors" id="btn-star">
+<span class="text-primary-fixed-dim font-bold">★</span>
+<span class="truncate">[LIKED]</span>
+</button>
+<button class="min-h-[44px] px-space-xs py-1 flex items-center justify-center gap-1 rounded bg-surface-container text-on-surface font-label-sm hover:text-primary active:bg-surface-bright transition-colors">
+<span class="text-secondary font-bold">↗</span>
+<span class="truncate">[AIRPLAY]</span>
+</button>
+<button class="min-h-[44px] px-space-xs py-1 flex items-center justify-center gap-1 rounded bg-surface-container text-on-surface font-label-sm hover:text-primary active:bg-surface-bright transition-colors">
+<span class="text-tertiary-fixed-dim font-bold">☰</span>
+<span class="truncate">[QUEUE:14]</span>
+</button>
+</div>
+</div>
+<!-- SYNCHRONIZED TERMINAL LYRICS BUFFER -->
+<div class="bg-surface-container-lowest rounded-lg p-space-sm flex flex-col gap-space-xs shadow-md">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-outline border-b border-outline-variant/30 pb-space-xs">
+<span class="text-primary-fixed-dim font-bold truncate">┌── [LYRICS_STREAM :: buffer/live] ──┐</span>
+<span class="text-secondary text-label-sm">[SYNC: OK]</span>
+</div>
+<div class="flex flex-col gap-1 py-1 font-body-sm">
+<!-- Past lyric -->
+<div class="flex items-start gap-2 text-outline/60 px-space-xs py-0.5 select-none">
+<span class="text-label-sm font-label-sm text-outline/40 pt-0.5">02:10</span>
+<span class="text-label-sm font-label-sm pt-0.5">&gt;</span>
+<span class="truncate">Just echo lines across the digital sea</span>
+</div>
+<!-- Active current lyric -->
+<div class="flex items-start gap-2 bg-surface-container px-space-xs py-1 rounded text-primary-container font-bold drop-shadow-[0_0_6px_rgba(0,255,102,0.3)]">
+<span class="text-label-sm font-label-sm text-primary pt-0.5">02:18</span>
+<span class="text-label-sm font-label-sm text-primary-container pt-0.5">&gt;</span>
+<div class="flex items-center gap-1 min-w-0">
+<span class="text-label-sm font-label-sm bg-primary-container text-surface-container-lowest px-1 rounded-sm shrink-0">CURRENT</span>
+<span class="truncate">Neon reflections on the monitor glass</span>
+<span class="inline-block w-1.5 h-3.5 bg-primary-container animate-pulse shrink-0"></span>
+</div>
+</div>
+<!-- Future lyric -->
+<div class="flex items-start gap-2 text-on-surface-variant px-space-xs py-0.5 select-none">
+<span class="text-label-sm font-label-sm text-outline pt-0.5">02:24</span>
+<span class="text-label-sm font-label-sm pt-0.5">&gt;</span>
+<span class="truncate">Synchronizing beats to the master clock</span>
+</div>
+<!-- Queue ahead lyric -->
+<div class="flex items-start gap-2 text-outline/50 px-space-xs py-0.5 select-none">
+<span class="text-label-sm font-label-sm text-outline/40 pt-0.5">02:31</span>
+<span class="text-label-sm font-label-sm pt-0.5">&gt;</span>
+<span class="truncate">Fade into the phosphor green glow</span>
+</div>
+</div>
+<div class="flex justify-between items-center text-label-sm font-label-sm text-outline pt-space-xs border-t border-outline-variant/30">
+<span>└────────────────────────────────────┘</span>
+<span class="text-on-surface-variant">BUF: 512KB [OK]</span>
+</div>
+</div>
+<!-- CLI COMMAND LINE RUNNER / TACTILE PROMPT -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex items-center justify-between text-body-sm font-body-sm">
+<div class="flex items-center gap-2 truncate min-w-0">
+<span class="text-secondary font-label-sm shrink-0">spt.term:~$</span>
+<span class="text-primary-fixed-dim truncate">mpris:playback --volume=+5dB</span>
+<span class="inline-block w-2 h-4 bg-primary-container animate-pulse shrink-0"></span>
+</div>
+<span class="text-label-sm font-label-sm px-1.5 py-0.5 rounded bg-surface-container text-outline shrink-0">[ENTER]</span>
+</div>
+</div>
+<!-- Vanilla Audio Visualizer & Transport Interaction Logic -->
+<script>
+  (function() {
+    // Dynamic Equalizer Animation Loop
+    const glyphs = [' ', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+    let isPlaying = true;
+    let animId = null;
+
+    function renderSpectrum() {
+      if (!isPlaying) return;
+      for (let i = 0; i < 9; i++) {
+        const barElem = document.getElementById('bar-' + i);
+        if (!barElem) continue;
+        
+        // Generate pseudo-random audio levels weighted by typical musical energy curve
+        const weight = (i < 3) ? 1.4 : (i < 6 ? 1.0 : 0.6);
+        const count = Math.min(6, Math.max(1, Math.floor((Math.random() * 5 + 1) * weight)));
+        let str = '';
+        for (let j = 0; j < count; j++) {
+          const char = (j === count - 1) ? glyphs[Math.floor(Math.random() * glyphs.length)] : '█';
+          str += char + '<br>';
+        }
+        barElem.innerHTML = str;
+      }
+      animId = setTimeout(renderSpectrum, 120);
+    }
+    renderSpectrum();
+
+    // Play / Pause Micro-Interaction
+    const playPauseBtn = document.getElementById('btn-play-pause');
+    const playGlyph = document.getElementById('play-glyph');
+    if (playPauseBtn && playGlyph) {
+      playPauseBtn.addEventListener('click', function() {
+        isPlaying = !isPlaying;
+        if (isPlaying) {
+          playGlyph.textContent = '❚❚';
+          playPauseBtn.className = "min-h-[48px] px-space-xs flex items-center justify-center rounded-lg bg-primary-container text-surface-container-lowest font-bold shadow-[0_0_15px_rgba(0,255,102,0.4)] active:scale-95 transition-transform";
+          renderSpectrum();
+        } else {
+          playGlyph.textContent = '▶';
+          playPauseBtn.className = "min-h-[48px] px-space-xs flex items-center justify-center rounded-lg bg-surface-container text-primary-container font-bold active:scale-95 transition-transform";
+          if (animId) clearTimeout(animId);
+        }
+      });
+    }
+
+    // Scrubber Touch & Drag Visual Update
+    const seekSlider = document.getElementById('seek-slider');
+    const scrubberFill = document.getElementById('scrubber-fill');
+    const scrubberUnfill = document.getElementById('scrubber-unfill');
+    const currentTimeText = document.getElementById('current-time');
+
+    if (seekSlider && scrubberFill && scrubberUnfill && currentTimeText) {
+      seekSlider.addEventListener('input', function(e) {
+        const val = parseInt(e.target.value, 10);
+        const max = parseInt(e.target.max, 10);
+        const percent = val / max;
+        const totalChars = 40;
+        const filledChars = Math.round(percent * totalChars);
+        const emptyChars = totalChars - filledChars;
+
+        scrubberFill.textContent = '[' + '='.repeat(Math.max(0, filledChars)) + '>';
+        scrubberUnfill.textContent = '-'.repeat(Math.max(0, emptyChars)) + ']';
+
+        // Calculate time mm:ss
+        const mins = Math.floor(val / 60);
+        const secs = val % 60;
+        currentTimeText.textContent = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+      });
+    }
+
+    // Favorite / Like Toggle
+    const starBtn = document.getElementById('btn-star');
+    if (starBtn) {
+      let liked = true;
+      starBtn.addEventListener('click', function() {
+        liked = !liked;
+        if (liked) {
+          starBtn.innerHTML = '<span class="text-primary-fixed-dim font-bold">★</span><span class="truncate">[LIKED]</span>';
+          starBtn.classList.remove('text-outline');
+          starBtn.classList.add('text-on-surface');
+        } else {
+          starBtn.innerHTML = '<span class="text-outline font-bold">☆</span><span class="truncate">[LIKE]</span>';
+          starBtn.classList.add('text-outline');
+          starBtn.classList.remove('text-on-surface');
+        }
+      });
+    }
+  })();
+</script></main><div class="fixed bottom-16 inset-x-0 z-40 bg-surface/95 px-3 py-1.5 border-t border-outline-variant/30"><div class="flex items-center justify-between text-primary-fixed-dim font-label-sm bg-surface-container px-space-sm py-space-xs rounded shadow-[0_0_10px_rgba(0,229,91,0.08)]"><div class="flex items-center gap-space-xs truncate mr-space-sm"><span class="text-primary font-bold">[▶]</span><span class="truncate text-on-surface font-body-sm">Track: Resonance - HOME</span><span class="text-on-surface-variant font-label-sm hidden sm:inline">[02:14/03:32]</span></div><div class="flex items-center gap-space-xs shrink-0"><button class="min-w-[44px] min-h-[44px] flex items-center justify-center text-primary-fixed-dim hover:text-primary transition-colors"><span class="font-label-lg">[❚❚]</span></button><button class="min-w-[44px] min-h-[44px] flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors"><span class="font-label-lg">[&gt;&gt;]</span></button></div></div></div><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.9)]" data-active-classes="bg-primary-container text-surface-container-lowest font-bold shadow-[0_0_12px_rgba(0,255,102,0.4)]"><div class="grid grid-cols-4 items-center h-14 px-2 pb-1 bg-surface border-t border-outline-variant/30"><a aria-current="page" class="flex flex-col items-center justify-center h-11 py-1 px-1 bg-primary-container text-surface-container-lowest font-bold border border-primary-container transition-all" data-path="now-playing" href="#"><span class="text-[14px] leading-none mb-0.5 font-bold">▶</span><span class="font-label-sm uppercase tracking-wider">[1:PLAY]</span></a><a class="flex flex-col items-center justify-center h-11 py-1 px-1 text-primary hover:bg-surface-container border border-transparent transition-all" data-path="library-browse" href="#"><span class="text-[14px] leading-none mb-0.5 font-bold">ᚢ</span><span class="font-label-sm uppercase tracking-wider">[2:TREE]</span></a><a class="flex flex-col items-center justify-center h-11 py-1 px-1 text-primary hover:bg-surface-container border border-transparent transition-all" data-path="search-cli" href="#"><span class="text-[14px] leading-none mb-0.5 font-bold">$_</span><span class="font-label-sm uppercase tracking-wider">[3:EXEC]</span></a><a class="flex flex-col items-center justify-center h-11 py-1 px-1 text-primary hover:bg-surface-container border border-transparent transition-all" data-path="themes-config" href="#"><span class="text-[14px] leading-none mb-0.5 font-bold">⚙</span><span class="font-label-sm uppercase tracking-wider">[4:THEME]</span></a></div></nav>
+
+</body></html>

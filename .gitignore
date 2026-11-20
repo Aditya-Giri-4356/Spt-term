@@ -1,0 +1,15 @@
+# Xcode
+.DS_Store
+*/.DS_Store
+build/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+
+# Backups and temporary files
+*.orig
+*.rej
+*~
+*.swp
