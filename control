@@ -1,0 +1,9 @@
+Package: ai.venice.spttermtweak
+Name: SptTermTweak
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Terminal UI layer for Spotify
+Maintainer: you
+Author: you
+Section: Tweaks
+Depends: mobilesubstrate, firmware (>= 16.0)
