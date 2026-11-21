@@ -30,3 +30,39 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: SptTerm/Info.plist
         TARGETED_DEVICE_FAMILY: "1,2"
+
+  SptTermTweak:
+    type: library.dynamic
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: SptTermTweak
+        excludes:
+          - "**/*.plist"
+      - path: SptTerm/DesignSystem
+      - path: SptTerm/Views
+      - path: SptTerm/ViewModels
+      - path: SptTerm/Models
+      - path: SptTerm/Services/Protocols
+      - path: SptTerm/Services/Mock
+      - path: SptTerm/Services/ServiceEnvironment.swift
+      - path: SptTerm/Services/Live/STSpotifyDTOs.swift
+    settings:
+      base:
+        PRODUCT_NAME: SptTermTweak
+        EXECUTABLE_PREFIX: ""
+        MACH_O_TYPE: mh_dylib
+        LD_DYLIB_INSTALL_NAME: "@executable_path/SptTermTweak.dylib"
+        SWIFT_VERSION: "5.0"
+        CODE_SIGNING_ALLOWED: NO
+        CODE_SIGNING_REQUIRED: NO
+        SKIP_INSTALL: NO
+        OTHER_LDFLAGS:
+          - "-framework"
+          - "UIKit"
+          - "-framework"
+          - "Foundation"
+          - "-framework"
+          - "AVFoundation"
+          - "-framework"
+          - "MediaPlayer"

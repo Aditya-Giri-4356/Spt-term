@@ -23,4 +23,5 @@ protocol PlayerServiceProtocol: AnyObject {
     func setRepeatMode(_ mode: RepeatMode)
     func toggleShuffle()
     func setVolume(_ value: Double)
+    func openURI(_ uri: String)
 }

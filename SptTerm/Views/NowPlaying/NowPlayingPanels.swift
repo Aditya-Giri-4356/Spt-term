@@ -4,8 +4,11 @@ struct NowPlayingSpectrumPanel: View {
     @EnvironmentObject private var theme: TerminalTheme
 
     var body: some View {
-        ASCIIPanel(title: "DSP :: SPECTRUM_FFT_1024", trailing: "REALTIME") {
-            VStack(spacing: TermSpace.xs) {
+        ASCIIPanel(title: "DSP :: SPECTRUM_FFT_1024", trailing: "UI ONLY") {
+            VStack(alignment: .leading, spacing: TermSpace.xs) {
+                Text("UI ONLY - does not process Spotify audio")
+                    .termType(TermType.telemetryTight, color: theme.palette.amber)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 LiveSpectrumBars(columns: 9)
                     .frame(height: 64)
                     .padding(.horizontal, TermSpace.xs)
@@ -33,9 +36,21 @@ struct NowPlayingScrubberPanel: View {
     @EnvironmentObject private var theme: TerminalTheme
 
     var body: some View {
-        ASCIIPanel(title: "SEEK & VOLUME", trailing: "POS: \(TermFormat.percent(viewModel.state.progressFraction))") {
+        let isSeekSupported = viewModel.state.isSeekSupported
+        let trailing = isSeekSupported ? "POS: \(TermFormat.percent(viewModel.state.progressFraction))" : "SEEK N/A"
+
+        ASCIIPanel(title: "SEEK & VOLUME", trailing: trailing) {
             VStack(alignment: .leading, spacing: TermSpace.sm) {
-                TimeScrubber(progress: viewModel.progressBinding, duration: viewModel.state.duration)
+                TimeScrubber(
+                    progress: viewModel.progressBinding,
+                    duration: viewModel.state.duration,
+                    onSeek: { fraction in
+                        if isSeekSupported {
+                            viewModel.seek(fraction)
+                        }
+                    },
+                    isReadOnly: !isSeekSupported
+                )
 
                 HStack(spacing: TermSpace.xs) {
                     Text("VOL:")

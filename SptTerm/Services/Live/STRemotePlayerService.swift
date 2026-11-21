@@ -180,6 +180,16 @@ final class STRemotePlayerService: NSObject, PlayerServiceProtocol {
         update { $0.volume = value.clampedUnit }
     }
 
+    func openURI(_ uri: String) {
+        if let url = URL(string: uri) {
+            #if os(iOS)
+            UIApplication.shared.open(url, options: [:]) { success in
+                NSLog("SptTerm: openURL completion: %d for %@", success ? 1 : 0, uri)
+            }
+            #endif
+        }
+    }
+
     private func remoteMode(_ mode: RepeatMode) -> SPTAppRemotePlaybackOptionsRepeatMode {
         switch mode {
         case .off: return .off

@@ -90,9 +90,11 @@ struct LibraryView: View {
 
     private var telemetryPanel: some View {
         ASCIIPanel(title: "FS :: /home/user/spotify_library", trailing: "[v2.4-stable]") {
-            VStack(spacing: TermSpace.xs) {
+            VStack(alignment: .leading, spacing: TermSpace.xs) {
+                Text("SESSION HISTORY - browse/search in Spotify")
+                    .termType(TermType.telemetryTight, color: theme.palette.accent)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 HStack(spacing: TermSpace.xs) {
-                    StatusPill(text: "DISK: 18.4GB/64GB", tone: .accent)
                     StatusPill(text: "TRACKS: \(viewModel.likedTracks.count + viewModel.albums.reduce(0) { $0 + $1.trackIDs.count })", tone: .accent)
                     StatusPill(text: "SYNC: OK", tone: .cyan, filled: false)
                 }

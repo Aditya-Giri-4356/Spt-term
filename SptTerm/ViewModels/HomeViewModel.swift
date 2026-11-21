@@ -38,7 +38,7 @@ final class HomeViewModel: ObservableObject {
                 tracksByID = Dictionary(uniqueKeysWithValues: tracks.map { ($0.id, $0) })
             }
         } catch {
-            errorMessage = "FETCH_FAILED: \(error.localizedDescription)"
+            errorMessage = error.localizedDescription
         }
         isLoading = false
     }

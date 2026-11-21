@@ -63,6 +63,10 @@ final class STSpotifyWebAPI {
         try await send("me/tracks", method: "DELETE", ids: [id])
     }
 
+    func currentUserProfile() async throws -> STUserProfileDTO {
+        try await get("me")
+    }
+
     private func get<T: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> T {
         let data = try await request(path, method: "GET", query: query, body: nil)
         return try JSONDecoder().decode(T.self, from: data)
@@ -112,15 +116,32 @@ final class STSpotifyWebAPI {
 
             os_log("STSpotifyWebAPI: HTTP Response: %{public}@ %{public}@ -> %d", log: OSLog.default, type: .info, method, url.absoluteString, http.statusCode)
 
-            if http.statusCode == 401 || http.statusCode == 403 {
+            if !(200..<300).contains(http.statusCode) {
                 let errorBody = String(data: data, encoding: .utf8) ?? "<non-utf8 error body>"
                 os_log("STSpotifyWebAPI: HTTP %d Error Body: %{public}@", log: OSLog.default, type: .error, http.statusCode, errorBody)
-            }
 
-            guard (200..<300).contains(http.statusCode) else {
-                throw STAuthError.http(http.statusCode)
+                let extractedMessage = Self.extractErrorMessage(from: data) ?? errorBody
+                let pathFormatted = path.hasPrefix("/") ? path : "/\(path)"
+                throw STAuthError.http(status: http.statusCode, message: "\(pathFormatted): \(extractedMessage)")
             }
             return data
         }
     }
+
+    private static func extractErrorMessage(from data: Data) -> String? {
+        struct SpotifyErrorPayload: Decodable {
+            struct InnerError: Decodable {
+                let message: String?
+                let status: Int?
+            }
+            let error: InnerError?
+            let error_description: String?
+        }
+        if let decoded = try? JSONDecoder().decode(SpotifyErrorPayload.self, from: data) {
+            return decoded.error?.message ?? decoded.error_description
+        }
+        return nil
+    }
 }
+
+extension STSpotifyWebAPI: STSpotifyWebAPIClient {}

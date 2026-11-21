@@ -189,6 +189,10 @@ final class MockPlayerService: PlayerServiceProtocol {
         publish(next)
     }
 
+    func openURI(_ uri: String) {
+        STLog.log("MockPlayerService.openURI: \(uri)")
+    }
+
     // MARK: Internals
 
     private func tick() {

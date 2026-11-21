@@ -33,9 +33,7 @@ struct ThemeDefinition: Identifiable, Hashable {
 enum ThemeCatalog {
     static let defaultID = "phosphor"
 
-    static let quickPicks: [String] = [
-        "phosphor", "nord", "dracula", "amber", "solarized-dark"
-    ]
+    static let quickPicks: [String] = all.map(\.id)
 
     static let all: [ThemeDefinition] = [
         entry("phosphor", 0, "Phosphor Matrix", "IBM 5151 Monochrome / VT100 Green", "#00FF66", "#000000"),
@@ -79,7 +77,10 @@ enum ThemeCatalog {
     ]
 
     static func definition(for id: String) -> ThemeDefinition {
-        all.first { $0.id == id } ?? all[0]
+        let clean = id.lowercased().replacingOccurrences(of: "-", with: "").replacingOccurrences(of: "_", with: "")
+        return all.first {
+            $0.id == id || $0.id.lowercased().replacingOccurrences(of: "-", with: "") == clean
+        } ?? all[0]
     }
 
     private static func entry(

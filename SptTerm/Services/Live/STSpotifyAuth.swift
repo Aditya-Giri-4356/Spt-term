@@ -17,7 +17,7 @@ enum STAuthError: LocalizedError, CustomStringConvertible, Equatable {
     case notConfigured
     case malformed
     case missingToken
-    case http(Int)
+    case http(status: Int, message: String)
 
     var description: String {
         switch self {
@@ -25,7 +25,11 @@ enum STAuthError: LocalizedError, CustomStringConvertible, Equatable {
         case .notConfigured: return "notConfigured"
         case .malformed: return "malformed"
         case .missingToken: return "missingToken"
-        case .http(let code): return "http(\(code))"
+        case .http(let status, let message):
+            if message.isEmpty {
+                return "\(status)"
+            }
+            return "\(status) \(message)"
         }
     }
 
@@ -126,7 +130,7 @@ final class STSpotifyAuth: NSObject {
         do {
             let token = try await validToken()
             return try await body(token)
-        } catch STAuthError.http(401) {
+        } catch let STAuthError.http(status, _) where status == 401 {
             os_log("STSpotifyAuth.withToken() - 401 received, forcing token expiry and retrying", log: OSLog.default, type: .info)
             forceExpiry()
             let token = try await validToken()
@@ -135,10 +139,13 @@ final class STSpotifyAuth: NSObject {
     }
 
     func signOut() {
-        STKeychain.delete(storageKey)
+        let deleted = STKeychain.delete(storageKey)
+        if !deleted {
+            os_log("STSpotifyAuth.signOut: Keychain delete reported failure", log: OSLog.default, type: .error)
+        }
         inMemoryToken = nil
         isAuthorized = false
-        os_log("STSpotifyAuth.signOut: cleared Keychain and in-memory token", log: OSLog.default, type: .info)
+        os_log("STSpotifyAuth.signOut: cleared Keychain and in-memory token, isAuthorized set to false", log: OSLog.default, type: .info)
     }
 
     private func authorizationURL(pkce: STPKCE) -> URL {
@@ -227,7 +234,7 @@ final class STSpotifyAuth: NSObject {
         guard (200..<300).contains(http.statusCode) else {
             let errorBody = String(data: data, encoding: .utf8) ?? "<non-utf8 error body>"
             os_log("STSpotifyAuth.tokenRequest: HTTP %d error: %{public}@", log: OSLog.default, type: .error, http.statusCode, errorBody)
-            throw STAuthError.http(http.statusCode)
+            throw STAuthError.http(status: http.statusCode, message: "/api/token: \(errorBody)")
         }
 
         guard let payload = try? JSONDecoder().decode(TokenPayload.self, from: data) else {
@@ -315,3 +322,5 @@ extension STSpotifyAuth: ASWebAuthenticationPresentationContextProviding {
         }
     }
 }
+
+extension STSpotifyAuth: STAuthServiceProtocol {}

@@ -35,7 +35,7 @@ final class NowPlayingViewModel: ObservableObject {
     var progressBinding: Binding<Double> {
         Binding(
             get: { self.state.progressFraction },
-            set: { self.seek($0) }
+            set: { _ in }
         )
     }
 

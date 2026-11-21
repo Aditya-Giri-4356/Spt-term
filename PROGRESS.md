@@ -15,11 +15,18 @@
   - Dual-layer token persistence: primary Keychain storage (`kSecClassGenericPassword`, service: bundle ID) with an automatic in-memory fallback (`inMemoryToken`) to prevent authorization/API failures when Keychain access is constrained.
   - Diagnostic logging via `os_log` tracking token exchanges (length, expiry, save status), token retrieval, and HTTP API calls.
 
-### 2. Project Generation & Build
-- `project.pbxproj` was restored to standard Xcode format using **XcodeGen** (`project.yml`).
-- `SptTermTweak/**` is explicitly excluded from the main application target.
-- `SpotifyiOS` SDK is integrated as an SPM binary dependency from `https://github.com/spotify/ios-sdk` at `master`.
-- `Info.plist` defines `CFBundleURLTypes` (`sptterm`) and `LSApplicationQueriesSchemes` (`spotify`).
+### 2. In-Process UI Tweak Architecture (Phase B)
+- **Tweak Target (`SptTermTweak.dylib`)**:
+  - Built as an arm64 iOS 16+ dynamic library via XcodeGen.
+  - Hosts the full SptTerm SwiftUI interface inside a dedicated non-key floating `UIWindow` above alert level (`UIWindow.Level.alert + 10.0`).
+  - Minimized floating launch pill (`[ >_ SPT.TERM ]`) with passthrough touch handling, 44x44 minimum touch target, persistent coordinates stored in `UserDefaults(suiteName: "com.aditya.sptterm.tweak")`.
+  - Fullscreen terminal view hosted in `UIHostingController` with `[ _ MINIMIZE ]` CRT button, safely making and releasing key window state.
+  - In-process services:
+    - `STInProcessPlayerService`: Polling `MPNowPlayingInfoCenter.default().nowPlayingInfo` (title, artist, album, duration, elapsed, rate) and dispatching transport controls via private `MRMediaRemoteSendCommand` (dlopen/dlsym).
+    - `STSessionLibraryService`: Observes tracks during session use, deduplicating by URI (newest first, capped at 200 items), persisting to `UserDefaults(suiteName: "com.aditya.sptterm.tweak")`. Displays one-line header `"SESSION HISTORY - browse/search in Spotify"`. Tapping an entry calls `UIApplication.shared.open(...)` and logs with `"SptTerm:" NSLog` prefix.
+    - `STInProcessArtworkService`: Reads `MPMediaItemArtwork` from `nowPlayingInfo` on the main thread, rasterizes pixels to ASCII glyph matrix (`ASCIIGlyphMatrix`), and extracts dominant accent color, falling back to mock only when artwork is `nil`.
+    - `STAudioTweaksService`: Audio effects / EQ state isolated completely in `UserDefaults(suiteName: "com.aditya.sptterm.tweak")`.
+    - `ExecPlaceholderView`: Live interactive command line supporting real actions (`play`, `pause`, `next`, `prev`, `theme <name>`, `open <uri>`); any other command outputs `"not available in-process"`. Prominently displays `"UI ONLY - does not process Spotify audio"`.
 
 ---
 
@@ -27,20 +34,19 @@
 
 | Feature | Status | Notes |
 |---|---|---|
-| Xcode Project Generation (`project.yml`) | **VERIFIED** | Generated via XcodeGen 2.48.0; `plutil -lint` passes cleanly |
-| SPM Package Resolution (`SpotifyiOS`) | **VERIFIED** | Resolved `https://github.com/spotify/ios-sdk @ master (8d3a71d)` |
-| iOS Simulator Compilation (`generic/platform=iOS Simulator`) | **VERIFIED** | Clean build with zero errors and zero Swift compiler warnings |
-| iOS Device Compilation (`generic/platform=iOS`) | **VERIFIED** | Clean arm64 build with zero errors |
-| Info.plist & URL Schemes (`sptterm`, `spotify`) | **VERIFIED** | Validated with `plutil -lint`; bundle validation passes |
-| Git Synchronization | **VERIFIED** | Pushed to remote `origin/main` (commit `f1b8803` and subsequent fixes) |
-| PKCE Token Exchange & Refresh (`STSpotifyAuth`) | **COMPILES ONLY** | S256 verification and token refresh logic compiles cleanly |
-| Spotify Web API Client (`STSpotifyWebAPI`) | **COMPILES ONLY** | Search, playlists, albums, and tracks endpoints mapped |
-| App Remote Player Service (`STRemotePlayerService`) | **COMPILES ONLY** | Connects with PKCE token; handles player state and transport controls |
-| Remote Artwork ASCII Rasterizer (`STRemoteArtworkService`) | **COMPILES ONLY** | Fetches via `imageAPI.fetchImage(forItem:with:callback:)`, renders ASCII glyph matrix |
-| Hardware Volume Instant Sync (`TerminalHeader`, `STRemotePlayerService`) | **VERIFIED** | Direct KVO observation on `AVAudioSession.outputVolume` and `@State` reactivity on drag |
-| Wordmark Clean Branding (`TerminalHeader`) | **VERIFIED** | Stripped `V2.4.0` version suffix next to `SPT.TERM` |
-| Preset Audio Effects (`STPresetAudioEffects`) | **COMPILES ONLY** | Clamped gain presets persisted in UserDefaults |
-| Service Container & Root Gate (`STServiceContainer`, `STRootGate`) | **COMPILES ONLY** | Reactive environment injection and onOpenURL routing |
-| Live Spotify App Remote Connection | **UNTESTED** | Requires active Spotify client on device |
-| Live Spotify Web API Queries | **UNTESTED** | Requires valid Spotify Client ID in `STSpotifyConfig.clientID` |
-| Phase B Tweak Injection (`EeveeSpotify.ipa`) | **UNTESTED** | Scheduled for Phase B session; target is EeveeSpotify IPA |
+| Overlay Hosting | **VERIFIED (user-reported)** | Hosted via UIHostingController in floating dylib overlay window on active UIWindowScene |
+| Now-Playing Metadata & Spectrum | **VERIFIED (user-reported)** | Track title, artist, album, elapsed progress, rate from MPNowPlayingInfoCenter |
+| Transport Controls | **VERIFIED (user-reported)** | Play/pause, next, previous via MRMediaRemoteSendCommand private dispatch |
+| Minimize & Restore | **VERIFIED (user-reported)** | CRT `[ _ MINIMIZE ]` button and floating launch pill |
+| Pill Drag & Persistence | **VERIFIED (user-reported)** | Draggable floating pill; position persisted to `com.aditya.sptterm.tweak` suite |
+| Themes & CRT Styling | **VERIFIED (user-reported)** | All 37 retro phosphor themes, scanlines, and CRT bloom persisted to tweak suite |
+| Eevee Coexistence & Stability | **VERIFIED (user-reported)** | Coexists stably within injected EeveeSpotify process without crashing or symbol collision |
+| Seek Ladder (`STInProcessPlayerService`) | **UNTESTED** | Strategies (command 24 variations & MRMediaRemoteSetElapsedTime) with 1s elapsed verification, winning strategy cached in tweak suite, SEEK N/A fallback, drag/tap seek-on-release |
+| On-Screen Log Buffer (`STLog`) | **UNTESTED** | 200-line in-memory ring buffer, EXEC `log` (last 40), EXEC `log copy` (all to pasteboard) |
+| History Thumbnails (`STSessionLibraryService`) | **UNTESTED** | Per-entry ASCII matrix & dominant accent captured during playback with 5s retry loop; persisted to tweak suite |
+| Session Library (`STSessionLibraryService`) | **UNTESTED** | Observes nowPlayingInfo, dedupes by URI, newest first, cap 200, persisted in tweak suite; one-line header `"SESSION HISTORY - browse/search in Spotify"` |
+| Play-by-URI (`open <uri>`) | **UNTESTED** | Opens `spotify:track:...` via `player.openURI` with `"SptTerm:" NSLog` logging |
+| Real Artwork (`STInProcessArtworkService`) | **UNTESTED** | Rasterizes MPMediaItemArtwork pixels into ASCII glyph matrix on main thread with mock fallback |
+| Audio FX (`STAudioTweaksService`, EQ UI) | **MOCK/UI-ONLY** | Visible `"UI ONLY - does not process Spotify audio"` badge; state persisted to tweak suite |
+| Web API (Phase A) | **BLOCKED** | Blocked by Spotify Web API app-owner Premium requirement (HTTP 403 on `/me/playlists`) |
+| Phase B Milestone 2 In-Process Tweak Build | **COMPILES ONLY** | `SptTermTweak` (Debug + Release) and `SptTerm` schemes compile cleanly with zero errors |

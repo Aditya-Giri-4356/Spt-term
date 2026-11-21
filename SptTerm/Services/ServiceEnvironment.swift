@@ -17,7 +17,16 @@ private struct ArtworkProviderKey: EnvironmentKey {
     static let defaultValue: ArtworkProviding = MockArtworkService()
 }
 
+private struct ServiceContainerKey: EnvironmentKey {
+    static let defaultValue: STServiceContainer? = nil
+}
+
 extension EnvironmentValues {
+    var serviceContainer: STServiceContainer? {
+        get { self[ServiceContainerKey.self] }
+        set { self[ServiceContainerKey.self] = newValue }
+    }
+
     var libraryService: LibraryServiceProtocol {
         get { self[LibraryServiceKey.self] }
         set { self[LibraryServiceKey.self] = newValue }
@@ -65,13 +74,91 @@ extension View {
     }
 }
 
-/// Live wiring. Held by `STRootGate` for the app's lifetime.
+/// Unified Environment holding services for SptTerm UI
+@MainActor
+final class ServiceEnvironment: ObservableObject {
+    @Published var isAuthorized: Bool = false
+
+    let player: PlayerServiceProtocol
+    let library: LibraryServiceProtocol
+    let auth: STAuthServiceProtocol
+    let audioTweaks: AudioEffectsServiceProtocol
+    let artwork: ArtworkProviding
+    var legacyContainer: STServiceContainer?
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init(
+        player: PlayerServiceProtocol,
+        library: LibraryServiceProtocol,
+        auth: STAuthServiceProtocol,
+        audioTweaks: AudioEffectsServiceProtocol,
+        artwork: ArtworkProviding = MockArtworkService(),
+        legacyContainer: STServiceContainer? = nil
+    ) {
+        self.player = player
+        self.library = library
+        self.auth = auth
+        self.audioTweaks = audioTweaks
+        self.artwork = artwork
+        self.legacyContainer = legacyContainer
+        self.isAuthorized = auth.isAuthorized
+
+        auth.authorizedPublisher
+            .receive(on: RunLoop.main)
+            .sink { [weak self] authState in
+                self?.isAuthorized = authState
+            }
+            .store(in: &cancellables)
+    }
+
+    func start() {
+        if isAuthorized {
+            #if canImport(SpotifyiOS)
+            legacyContainer?.start()
+            #endif
+        }
+    }
+
+    func authorize() async throws {
+        try await auth.authorize()
+    }
+
+    func signOut() {
+        auth.signOut()
+    }
+
+    func handle(url: URL) -> Bool {
+        auth.handle(url: url)
+    }
+
+    #if canImport(SpotifyiOS)
+    static func forApp() -> ServiceEnvironment {
+        let container = STServiceContainer()
+        return ServiceEnvironment(
+            player: container.player,
+            library: container.library,
+            auth: container.auth,
+            audioTweaks: container.effects,
+            artwork: container.artwork,
+            legacyContainer: container
+        )
+    }
+    #endif
+}
+
+protocol STSpotifyWebAPIClient: AnyObject {
+    func currentUserProfile() async throws -> STUserProfileDTO
+}
+
+#if canImport(SpotifyiOS)
+/// Live wiring. Held by `ServiceEnvironment` for the standalone app.
 @MainActor
 final class STServiceContainer: ObservableObject {
     @Published private(set) var isAuthorized = false
 
     let auth = STSpotifyAuth()
-    private lazy var api = STSpotifyWebAPI(auth: auth)
+    private(set) lazy var api = STSpotifyWebAPI(auth: auth)
 
     private(set) lazy var player: PlayerServiceProtocol =
         STRemotePlayerService(auth: auth, webAPI: api)
@@ -102,6 +189,20 @@ final class STServiceContainer: ObservableObject {
         (player as? STRemotePlayerService)?.connect()
     }
 }
+#else
+final class STMockWebAPIClient: STSpotifyWebAPIClient {
+    func currentUserProfile() async throws -> STUserProfileDTO {
+        STUserProfileDTO(id: "spotify_tweak_session", display_name: "Spotify Client", product: "premium", email: nil)
+    }
+}
+
+@MainActor
+final class STServiceContainer: ObservableObject {
+    @Published private(set) var isAuthorized = true
+    let auth: STAuthServiceProtocol = MockAuthService(isAuthorized: true)
+    let api: STSpotifyWebAPIClient? = STMockWebAPIClient()
+}
+#endif
 
 final class PreviewServices {
     let library: LibraryServiceProtocol = MockLibraryService()

@@ -49,7 +49,11 @@ enum STKeychain {
     @discardableResult
     static func delete(_ key: String) -> Bool {
         let status = SecItemDelete(baseQuery(key) as CFDictionary)
-        return status == errSecSuccess || status == errSecItemNotFound
+        if status != errSecSuccess && status != errSecItemNotFound {
+            os_log("STKeychain.delete: SecItemDelete failed with OSStatus %d for key %{public}@", log: OSLog.default, type: .error, status, key)
+            return false
+        }
+        return true
     }
 
     private static func baseQuery(_ key: String) -> [String: Any] {

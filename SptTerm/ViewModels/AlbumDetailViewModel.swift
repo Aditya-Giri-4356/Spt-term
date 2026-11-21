@@ -28,7 +28,7 @@ final class AlbumDetailViewModel: ObservableObject {
             self.album = album
             self.tracks = tracks
         } catch {
-            errorMessage = "FETCH_FAILED: \(error.localizedDescription)"
+            errorMessage = error.localizedDescription
         }
         isLoading = false
     }

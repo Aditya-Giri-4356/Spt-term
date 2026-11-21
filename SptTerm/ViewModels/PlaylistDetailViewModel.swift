@@ -28,7 +28,7 @@ final class PlaylistDetailViewModel: ObservableObject {
             self.playlist = playlist
             self.tracks = tracks
         } catch {
-            errorMessage = "FETCH_FAILED: \(error.localizedDescription)"
+            errorMessage = error.localizedDescription
         }
         isLoading = false
     }

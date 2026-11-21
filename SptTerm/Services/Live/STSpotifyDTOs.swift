@@ -33,6 +33,13 @@ struct STOwnerDTO: Decodable {
     let display_name: String?
 }
 
+struct STUserProfileDTO: Decodable {
+    let id: String
+    let display_name: String?
+    let product: String?
+    let email: String?
+}
+
 struct STPlaylistDTO: Decodable {
     let id: String
     let name: String

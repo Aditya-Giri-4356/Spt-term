@@ -8,9 +8,15 @@ struct TimeScrubber: View {
     var duration: Double
     var onSeek: (Double) -> Void = { _ in }
     var onScrubbingChanged: (Bool) -> Void = { _ in }
+    var isReadOnly: Bool = false
 
     @State private var isScrubbing = false
+    @State private var dragProgress: Double?
     @State private var lastDetent = -1
+
+    private var activeProgress: Double {
+        dragProgress ?? progress
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: TermSpace.xs) {
@@ -19,12 +25,12 @@ struct TimeScrubber: View {
                 ZStack {
                     RoundedRectangle(cornerRadius: TermRadius.card)
                         .fill(theme.palette.panelRaised)
-                    ASCIIProgressBar(progress: progress, width: 34)
+                    ASCIIProgressBar(progress: activeProgress, width: 34)
                         .padding(.horizontal, TermSpace.sm)
                 }
                 .contentShape(Rectangle())
                 .gesture(
-                    DragGesture(minimumDistance: 0)
+                    isReadOnly ? nil : DragGesture(minimumDistance: 0)
                         .onChanged { value in
                             if !isScrubbing {
                                 isScrubbing = true
@@ -35,7 +41,10 @@ struct TimeScrubber: View {
                         .onEnded { _ in
                             isScrubbing = false
                             onScrubbingChanged(false)
-                            onSeek(progress)
+                            let finalValue = dragProgress ?? progress
+                            dragProgress = nil
+                            progress = finalValue
+                            onSeek(finalValue)
                         }
                 )
             }
@@ -43,24 +52,31 @@ struct TimeScrubber: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Seek position")
-        .accessibilityValue("\(TermFormat.duration(progress * duration)) of \(TermFormat.duration(duration))")
+        .accessibilityValue("\(TermFormat.duration(activeProgress * duration)) of \(TermFormat.duration(duration))")
         .accessibilityAdjustableAction { direction in
+            guard !isReadOnly else { return }
             let step = 0.05
+            var next = activeProgress
             switch direction {
             case .increment:
-                progress = (progress + step).clampedUnit
+                next = (next + step).clampedUnit
             case .decrement:
-                progress = (progress - step).clampedUnit
+                next = (next - step).clampedUnit
             @unknown default:
                 break
             }
-            onSeek(progress)
+            progress = next
+            onSeek(next)
         }
     }
 
     private var header: some View {
         HStack(spacing: TermSpace.xs) {
-            Text("SEEK_CURSOR :: POS: \(TermFormat.percent(progress.clampedUnit))")
+            if isReadOnly {
+                Text("[SEEK N/A]")
+                    .termType(TermType.telemetryTight, color: theme.palette.amber)
+            }
+            Text("SEEK_CURSOR :: POS: \(TermFormat.percent(activeProgress.clampedUnit))")
                 .termType(TermType.telemetryTight, color: theme.palette.accentDim)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -71,13 +87,13 @@ struct TimeScrubber: View {
 
     private var timecode: some View {
         HStack(spacing: 3) {
-            Text(TermFormat.duration(progress * duration))
+            Text(TermFormat.duration(activeProgress * duration))
                 .termType(TermType.telemetryTight, color: theme.palette.accent)
             Text("/")
                 .termType(TermType.telemetryTight, color: theme.palette.textMuted)
             Text(TermFormat.duration(duration))
                 .termType(TermType.telemetryTight, color: theme.palette.textSecondary)
-            Text("(\(TermFormat.signedDuration(progress * duration - duration)))")
+            Text("(\(TermFormat.signedDuration(activeProgress * duration - duration)))")
                 .termType(TermType.telemetryTight, color: theme.palette.cyan)
         }
         .lineLimit(1)
@@ -89,7 +105,7 @@ struct TimeScrubber: View {
     private func update(at x: CGFloat, width: CGFloat) {
         guard width > 0 else { return }
         let newValue = Double(x / width).clampedUnit
-        progress = newValue
+        dragProgress = newValue
         let detent = Int(newValue * 10)
         if detent != lastDetent {
             lastDetent = detent

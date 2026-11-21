@@ -24,6 +24,7 @@ struct PlayerState: Equatable {
     var isShuffled: Bool
     var volume: Double
     var likedTrackIDs: Set<String>
+    var isSeekSupported: Bool = true
 
     var isCurrentTrackLiked: Bool {
         guard let currentTrack else { return false }
@@ -52,6 +53,7 @@ struct PlayerState: Equatable {
         repeatMode: .off,
         isShuffled: false,
         volume: 0.8,
-        likedTrackIDs: []
+        likedTrackIDs: [],
+        isSeekSupported: true
     )
 }

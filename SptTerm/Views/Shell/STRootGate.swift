@@ -1,25 +1,26 @@
 import SwiftUI
 
-/// Owns the live container and holds the shell behind authorization.
+/// Owns the live environment and holds the shell behind authorization.
 /// RootView itself is untouched so previews keep using mocks.
 struct STRootGate: View {
-    @StateObject private var container = STServiceContainer()
+    @EnvironmentObject private var env: ServiceEnvironment
     @EnvironmentObject private var theme: TerminalTheme
 
     var body: some View {
         Group {
-            if container.isAuthorized {
+            if env.isAuthorized {
                 RootView()
             } else {
                 signedOut
             }
         }
-        .environment(\.libraryService, container.library)
-        .environment(\.playerService, container.player)
-        .environment(\.audioEffectsService, container.effects)
-        .environment(\.artworkProvider, container.artwork)
-        .task { container.start() }
-        .onOpenURL { url in container.auth.handle(url: url) }
+        .environment(\.serviceContainer, env.legacyContainer)
+        .environment(\.libraryService, env.library)
+        .environment(\.playerService, env.player)
+        .environment(\.audioEffectsService, env.audioTweaks)
+        .environment(\.artworkProvider, env.artwork)
+        .task { env.start() }
+        .onOpenURL { url in _ = env.handle(url: url) }
     }
 
     private var signedOut: some View {
@@ -32,7 +33,7 @@ struct STRootGate: View {
                 .font(.system(.body, design: .monospaced).weight(.bold))
 
             Button {
-                Task { try? await container.auth.authorize() }
+                Task { try? await env.authorize() }
             } label: {
                 Text("[ CONNECT ]").font(.system(.body, design: .monospaced))
             }

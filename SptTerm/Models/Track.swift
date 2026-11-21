@@ -22,6 +22,40 @@ struct Track: Identifiable, Codable, Hashable {
     let formatLabel: String
     let bitrateLabel: String
     var lyrics: [LyricsLine]
+    var artworkMatrixRows: [String]? = nil
+    var artworkAccentHex: String? = nil
+
+    init(
+        id: String,
+        title: String,
+        artistID: String,
+        artistName: String,
+        albumID: String,
+        albumTitle: String,
+        year: Int,
+        trackNumber: Int,
+        duration: Double,
+        formatLabel: String,
+        bitrateLabel: String,
+        lyrics: [LyricsLine],
+        artworkMatrixRows: [String]? = nil,
+        artworkAccentHex: String? = nil
+    ) {
+        self.id = id
+        self.title = title
+        self.artistID = artistID
+        self.artistName = artistName
+        self.albumID = albumID
+        self.albumTitle = albumTitle
+        self.year = year
+        self.trackNumber = trackNumber
+        self.duration = duration
+        self.formatLabel = formatLabel
+        self.bitrateLabel = bitrateLabel
+        self.lyrics = lyrics
+        self.artworkMatrixRows = artworkMatrixRows
+        self.artworkAccentHex = artworkAccentHex
+    }
 
     var durationLabel: String { TermFormat.duration(duration) }
 

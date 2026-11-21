@@ -30,7 +30,7 @@ final class LibraryViewModel: ObservableObject {
             playlists = p
             likedTracks = l
         } catch {
-            errorMessage = "FETCH_FAILED: \(error.localizedDescription)"
+            errorMessage = error.localizedDescription
         }
         isLoading = false
     }

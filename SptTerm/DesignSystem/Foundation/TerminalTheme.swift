@@ -84,10 +84,11 @@ final class TerminalTheme: ObservableObject {
     var isCustomAccent: Bool { customAccentHex != nil }
 
     func select(_ id: String) {
-        guard catalog.contains(where: { $0.id == id }) else { return }
-        themeID = id
+        let def = ThemeCatalog.definition(for: id)
+        guard catalog.contains(where: { $0.id == def.id }) else { return }
+        themeID = def.id
         customAccentHex = nil
-        palette = ThemeCatalog.definition(for: id).palette
+        palette = def.palette
         persist()
     }
 
