@@ -1,6 +1,5 @@
+import Combine
 import SwiftUI
-
-// MARK: - Environment keys
 
 private struct LibraryServiceKey: EnvironmentKey {
     static let defaultValue: LibraryServiceProtocol = MockLibraryService()
@@ -40,8 +39,6 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - Injection helpers
-
 extension View {
     func libraryService(_ service: LibraryServiceProtocol) -> some View {
         environment(\.libraryService, service)
@@ -68,7 +65,32 @@ extension View {
     }
 }
 
-// MARK: - Preview container
+/// Live wiring. Held by `STRootGate` for the app's lifetime.
+@MainActor
+final class STServiceContainer: ObservableObject {
+    @Published private(set) var isAuthorized = false
+
+    let auth = STSpotifyAuth()
+    private lazy var api = STSpotifyWebAPI(auth: auth)
+
+    private(set) lazy var player: PlayerServiceProtocol =
+        STRemotePlayerService(auth: auth, webAPI: api)
+    private(set) lazy var library: LibraryServiceProtocol =
+        STWebLibraryService(api: api)
+
+    private var cancellables = Set<AnyCancellable>()
+
+    init() {
+        auth.authorizedPublisher
+            .receive(on: RunLoop.main)
+            .assign(to: &$isAuthorized)
+    }
+
+    func start() {
+        guard isAuthorized else { return }
+        (player as? STRemotePlayerService)?.connect()
+    }
+}
 
 final class PreviewServices {
     let library: LibraryServiceProtocol = MockLibraryService()
@@ -77,7 +99,6 @@ final class PreviewServices {
     let artwork: ArtworkProviding = MockArtworkService()
 }
 
-/// Preview container with theme + services pre-wired.
 struct TerminalAppPreview<Content: View>: View {
     @StateObject private var theme: TerminalTheme
     @State private var services = PreviewServices()

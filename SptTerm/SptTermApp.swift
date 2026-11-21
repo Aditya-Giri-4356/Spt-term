@@ -6,7 +6,7 @@ struct SptTermApp: App {
 
     var body: some Scene {
         WindowGroup {
-            RootView()
+            STRootGate()
                 .environmentObject(theme)
         }
     }
