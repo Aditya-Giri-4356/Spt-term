@@ -3,6 +3,7 @@ import SwiftUI
 struct TrackArtwork: Equatable {
     let matrix: ASCIIGlyphMatrix
     let accent: Color
+    var accentHex: String? = nil
 }
 
 /// Album art is rendered as a deterministic glyph grid in this design.

@@ -106,8 +106,10 @@ final class STInProcessArtworkService: ArtworkProviding {
             return nil
         }
 
-        let accent = dominantColor(from: image) ?? Color(red: 0.0, green: 1.0, blue: 0.4)
-        return TrackArtwork(matrix: matrix, accent: accent)
+        let dominant = dominantColor(from: image)
+        let accent = dominant?.color ?? Color(red: 0.0, green: 1.0, blue: 0.4)
+        let hex = dominant?.hex ?? "#00FF66"
+        return TrackArtwork(matrix: matrix, accent: accent, accentHex: hex)
     }
 
     private func convertToASCIIMatrix(image: UIImage, columns: Int, rows: Int) -> ASCIIGlyphMatrix? {
@@ -149,7 +151,7 @@ final class STInProcessArtworkService: ArtworkProviding {
         return ASCIIGlyphMatrix(rows: lines)
     }
 
-    private func dominantColor(from image: UIImage) -> Color? {
+    private func dominantColor(from image: UIImage) -> (color: Color, hex: String)? {
         guard let cgImage = image.cgImage else { return nil }
         let sampleSize = 8
         let colorSpace = CGColorSpaceCreateDeviceRGB()
@@ -188,6 +190,7 @@ final class STInProcessArtworkService: ArtworkProviding {
         let r = (totalR / count) / 255.0
         let g = (totalG / count) / 255.0
         let b = (totalB / count) / 255.0
-        return Color(red: r, green: g, blue: b)
+        let hex = String(format: "#%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255))
+        return (Color(red: r, green: g, blue: b), hex)
     }
 }
