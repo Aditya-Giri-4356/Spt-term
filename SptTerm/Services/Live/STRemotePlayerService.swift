@@ -11,6 +11,8 @@ final class STRemotePlayerService: NSObject, PlayerServiceProtocol {
 
     private let stateSubject = CurrentValueSubject<PlayerState, Never>(.empty)
     private var remote: SPTAppRemote?
+    /// Exposed for the artwork service's image API.
+    var imageRemote: SPTAppRemote? { remote }
     private var reconnectAttempt = 0
     private var reconnectTask: Task<Void, Never>?
 

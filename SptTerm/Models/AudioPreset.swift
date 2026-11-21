@@ -74,7 +74,7 @@ struct AudioPreset: Identifiable, Codable, Hashable {
     ]
 }
 
-struct AudioEffectsState: Equatable {
+struct AudioEffectsState: Equatable, Codable {
     var bandGains: [Int: Double]
     var bassBoost: Double
     var treble: Double

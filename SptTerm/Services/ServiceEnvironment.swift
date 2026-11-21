@@ -77,6 +77,11 @@ final class STServiceContainer: ObservableObject {
         STRemotePlayerService(auth: auth, webAPI: api)
     private(set) lazy var library: LibraryServiceProtocol =
         STWebLibraryService(api: api)
+    private(set) lazy var artwork: ArtworkProviding =
+        STRemoteArtworkService(remote: { [weak self] in self?.remotePlayer?.imageRemote })
+    let effects: AudioEffectsServiceProtocol = STPresetAudioEffects()
+
+    var remotePlayer: STRemotePlayerService? { player as? STRemotePlayerService }
 
     private var cancellables = Set<AnyCancellable>()
 

@@ -16,6 +16,8 @@ struct STRootGate: View {
         }
         .environment(\.libraryService, container.library)
         .environment(\.playerService, container.player)
+        .environment(\.audioEffectsService, container.effects)
+        .environment(\.artworkProvider, container.artwork)
         .task { container.start() }
     }
 
