@@ -322,7 +322,7 @@ extension ServiceEnvironment {
         let library = STSessionLibraryService.shared
         let auth = MockAuthService(isAuthorized: true)
         let audioTweaks = STAudioTweaksService()
-        let artwork = STInProcessArtworkService()
+        let artwork = STInProcessArtworkService.shared
         return ServiceEnvironment(
             player: player,
             library: library,

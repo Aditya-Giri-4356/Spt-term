@@ -7,6 +7,9 @@ final class STLog {
     static let shared = STLog()
     static let logCopy = "log copy"
     static let seekNA = "SEEK N/A"
+    static let repeatNA = "REPEAT N/A"
+    static let repeatUnverified = "REPEAT (UNVERIFIED)"
+    static let artworkNilPrefix = "artwork nil for"
 
     private var buffer: [String] = []
     private let lock = NSLock()

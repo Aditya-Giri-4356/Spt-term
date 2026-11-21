@@ -30,8 +30,8 @@ struct NowPlayingTransportPanel: View {
                     )
                     transportButton(
                         glyph: viewModel.repeatSymbol,
-                        label: viewModel.state.repeatMode.label,
-                        isActive: viewModel.state.repeatMode != .off,
+                        label: viewModel.repeatLabel,
+                        isActive: viewModel.state.repeatMode != .off && viewModel.state.isRepeatSupported,
                         action: viewModel.cycleRepeat
                     )
                 }

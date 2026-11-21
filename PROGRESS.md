@@ -41,12 +41,14 @@
 | Pill Drag & Persistence | **VERIFIED (user-reported)** | Draggable floating pill; position persisted to `com.aditya.sptterm.tweak` suite |
 | Themes & CRT Styling | **VERIFIED (user-reported)** | All 37 retro phosphor themes, scanlines, and CRT bloom persisted to tweak suite |
 | Eevee Coexistence & Stability | **VERIFIED (user-reported)** | Coexists stably within injected EeveeSpotify process without crashing or symbol collision |
-| Seek Ladder (`STInProcessPlayerService`) | **UNTESTED** | Strategies (command 24 variations & MRMediaRemoteSetElapsedTime) with 1s elapsed verification, winning strategy cached in tweak suite, SEEK N/A fallback, drag/tap seek-on-release |
-| On-Screen Log Buffer (`STLog`) | **UNTESTED** | 200-line in-memory ring buffer, EXEC `log` (last 40), EXEC `log copy` (all to pasteboard) |
-| History Thumbnails (`STSessionLibraryService`) | **UNTESTED** | Per-entry ASCII matrix & dominant accent captured during playback with 5s retry loop; persisted to tweak suite |
-| Session Library (`STSessionLibraryService`) | **UNTESTED** | Observes nowPlayingInfo, dedupes by URI, newest first, cap 200, persisted in tweak suite; one-line header `"SESSION HISTORY - browse/search in Spotify"` |
-| Play-by-URI (`open <uri>`) | **UNTESTED** | Opens `spotify:track:...` via `player.openURI` with `"SptTerm:" NSLog` logging |
-| Real Artwork (`STInProcessArtworkService`) | **UNTESTED** | Rasterizes MPMediaItemArtwork pixels into ASCII glyph matrix on main thread with mock fallback |
+| Seek Control (drag + EXEC) | **VERIFIED (user-reported)** | Scrubber release & EXEC `seek <seconds>` seeking via MediaRemote ladder |
+| Per-Track History Covers | **VERIFIED (user-reported)** | Saved per-entry ASCII matrix & dominant accent captured during session playback |
+| On-Screen Log Buffer (`STLog`) | **VERIFIED (user-reported)** | 200-line ring buffer with EXEC `log` and `log copy` commands |
+| Session Library (`STSessionLibraryService`) | **VERIFIED (user-reported)** | Observes nowPlayingInfo, dedupes by URI, newest first, cap 200, persisted in tweak suite |
+| Play-by-URI (`open <uri>`) | **VERIFIED (user-reported)** | Opens `spotify:track:...` via `player.openURI` with `"SptTerm:" NSLog` logging |
+| Progress Sync After Seek | **UNTESTED** | Local anchor extrapolation, 2.5s ignore window, 2 consecutive full-ladder failures while playing before SEEK N/A, resync on transport |
+| Live Cover Cache & Retry | **UNTESTED** | URI-keyed cache, placeholder on URI change with poll retry, 300x300 main-thread fetch with bounds fallback, single nil log per track |
+| Repeat Ladder & Verification | **UNTESTED** | AdvanceRepeatMode (7), ChangeRepeatMode (25/27/14), MPRemoteCommandCenter 1s verify, REPEAT (UNVERIFIED) and REPEAT N/A handling |
 | Audio FX (`STAudioTweaksService`, EQ UI) | **MOCK/UI-ONLY** | Visible `"UI ONLY - does not process Spotify audio"` badge; state persisted to tweak suite |
 | Web API (Phase A) | **BLOCKED** | Blocked by Spotify Web API app-owner Premium requirement (HTTP 403 on `/me/playlists`) |
 | Phase B Milestone 2 In-Process Tweak Build | **COMPILES ONLY** | `SptTermTweak` (Debug + Release) and `SptTerm` schemes compile cleanly with zero errors |

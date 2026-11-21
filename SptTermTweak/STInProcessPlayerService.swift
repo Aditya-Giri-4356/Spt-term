@@ -6,11 +6,41 @@ import AVFoundation
 
 typealias STPlayerService = PlayerServiceProtocol
 
+private struct PlaybackAnchor {
+    var elapsed: Double
+    var timestamp: Date
+    var rate: Double
+
+    func extrapolated(at date: Date = Date(), duration: Double = 0) -> Double {
+        let delta = date.timeIntervalSince(timestamp)
+        let calc = elapsed + rate * delta
+        if duration > 0 {
+            return min(max(calc, 0), duration)
+        }
+        return max(calc, 0)
+    }
+}
+
 final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     private let subject: CurrentValueSubject<PlayerState, Never>
     private var pollTimer: AnyCancellable?
     private var volumeObserver: NSKeyValueObservation?
     private var cancellables = Set<AnyCancellable>()
+
+    // MARK: - Local Anchor & Seek State
+    private var anchor = PlaybackAnchor(elapsed: 0, timestamp: Date(), rate: 0)
+    private var ignoreNowPlayingUntil: Date = .distantPast
+    private var consecutiveSeekFailures: Int = 0
+    private var seekUnsupportedSession = false
+    private var seekTask: Task<Void, Never>?
+
+    // MARK: - Repeat State
+    private var repeatUnsupportedSession = false
+    private var repeatTask: Task<Void, Never>?
+    private let winningRepeatStrategyKey = "sptterm.repeat.winning_strategy"
+
+    private let winningStrategyKey = "sptterm.seek.winning_strategy"
+    private let tweakDefaults = UserDefaults(suiteName: "com.aditya.sptterm.tweak") ?? .standard
 
     var state: PlayerState { subject.value }
     var statePublisher: AnyPublisher<PlayerState, Never> {
@@ -36,6 +66,8 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     deinit {
         pollTimer?.cancel()
         volumeObserver?.invalidate()
+        seekTask?.cancel()
+        repeatTask?.cancel()
     }
 
     // MARK: - State & Metadata Observation
@@ -65,7 +97,8 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     }
 
     private func startPolling() {
-        pollTimer = Timer.publish(every: 0.5, on: .main, in: .common)
+        // Poll every 0.25s for smooth UI progress extrapolation and responsive live state sync
+        pollTimer = Timer.publish(every: 0.25, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.pollNowPlaying()
@@ -81,18 +114,45 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         let artist = info[MPMediaItemPropertyArtist] as? String ?? ""
         let album = info[MPMediaItemPropertyAlbumTitle] as? String ?? ""
         let duration = (info[MPMediaItemPropertyPlaybackDuration] as? NSNumber)?.doubleValue ?? 0
-        let elapsed = (info[MPNowPlayingInfoPropertyElapsedPlaybackTime] as? NSNumber)?.doubleValue ?? 0
-        let rate = (info[MPNowPlayingInfoPropertyPlaybackRate] as? NSNumber)?.doubleValue ?? 0
-        let isPlaying = rate > 0.0
+        let rawElapsed = (info[MPNowPlayingInfoPropertyElapsedPlaybackTime] as? NSNumber)?.doubleValue ?? 0
+        let rawRate = (info[MPNowPlayingInfoPropertyPlaybackRate] as? NSNumber)?.doubleValue ?? 0
+        let isPlaying = rawRate > 0.0
         let externalID = (info["MPNowPlayingInfoPropertyExternalContentIdentifier"] as? String) ?? "\(title)|\(artist)"
+
+        let isTrackChanged = (state.currentTrack?.title != title || state.currentTrack?.artistName != artist)
+        let now = Date()
+
+        if isTrackChanged {
+            // Track changed: resync anchor immediately to Spotify's value
+            anchor = PlaybackAnchor(elapsed: rawElapsed, timestamp: now, rate: rawRate)
+            ignoreNowPlayingUntil = .distantPast
+        } else if now < ignoreNowPlayingUntil {
+            // Within 2.5s window after seek: ignore nowPlayingInfo elapsed values that differ by > 3s
+            let extrapolated = anchor.extrapolated(at: now, duration: duration)
+            if abs(rawElapsed - extrapolated) <= 3.0 {
+                // Spotify's reported position now agrees with the seek target (caught up); resync anchor
+                ignoreNowPlayingUntil = .distantPast
+                anchor = PlaybackAnchor(elapsed: rawElapsed, timestamp: now, rate: rawRate)
+            } else {
+                // Ignore Spotify's stale nowPlayingInfo elapsed value, extrapolate from anchor
+                if anchor.rate != rawRate {
+                    anchor = PlaybackAnchor(elapsed: extrapolated, timestamp: now, rate: rawRate)
+                }
+            }
+        } else {
+            // Outside ignore window: resync to Spotify's value once it agrees or changes significantly
+            if abs(rawElapsed - anchor.elapsed) > 0.5 || rawRate != anchor.rate {
+                anchor = PlaybackAnchor(elapsed: rawElapsed, timestamp: now, rate: rawRate)
+            }
+        }
 
         var next = state
         next.isPlaying = isPlaying
         next.duration = duration
-        next.progress = elapsed
+        next.progress = anchor.extrapolated(at: now, duration: duration)
 
         if !title.isEmpty {
-            if next.currentTrack?.title != title || next.currentTrack?.artistName != artist {
+            if isTrackChanged {
                 let track = Track(
                     id: externalID,
                     title: title,
@@ -115,6 +175,14 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
             }
         }
 
+        // Live cover missing retry: if artwork is not yet cached for current URI, retry every poll
+        if let current = next.currentTrack, !STInProcessArtworkService.shared.hasCachedArtwork(for: current.id) {
+            if let resolved = STInProcessArtworkService.shared.tryResolveLiveArtwork(for: current.id) {
+                next.currentTrack?.artworkMatrixRows = resolved.matrix.rows
+                next.currentTrack?.artworkAccentHex = resolved.accentHex
+            }
+        }
+
         if next != state {
             publish(next)
         }
@@ -128,11 +196,6 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
 
     private typealias MRMediaRemoteSendCommandFunction = @convention(c) (UInt32, AnyObject?) -> Bool
     private typealias MRMediaRemoteSetElapsedTimeFunction = @convention(c) (Double) -> Void
-
-    private let winningStrategyKey = "sptterm.seek.winning_strategy"
-    private var seekUnsupportedSession = false
-    private var seekTask: Task<Void, Never>?
-    private let tweakDefaults = UserDefaults(suiteName: "com.aditya.sptterm.tweak") ?? .standard
 
     private func sendMRCommand(_ command: UInt32) {
         guard let handle = dlopen("/System/Library/PrivateFrameworks/MediaRemote.framework/MediaRemote", RTLD_NOW) else {
@@ -154,10 +217,22 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     }
 
     func play() {
+        let now = Date()
+        let current = anchor.extrapolated(at: now, duration: state.duration)
+        anchor = PlaybackAnchor(elapsed: current, timestamp: now, rate: 1.0)
+        var next = state
+        next.isPlaying = true
+        publish(next)
         sendMRCommand(0) // Play = 0
     }
 
     func pause() {
+        let now = Date()
+        let current = anchor.extrapolated(at: now, duration: state.duration)
+        anchor = PlaybackAnchor(elapsed: current, timestamp: now, rate: 0.0)
+        var next = state
+        next.isPlaying = false
+        publish(next)
         sendMRCommand(1) // Pause = 1
     }
 
@@ -170,10 +245,16 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     }
 
     func next() {
+        let now = Date()
+        anchor = PlaybackAnchor(elapsed: 0, timestamp: now, rate: state.isPlaying ? 1.0 : 0.0)
+        ignoreNowPlayingUntil = .distantPast
         sendMRCommand(4) // Next = 4
     }
 
     func previous() {
+        let now = Date()
+        anchor = PlaybackAnchor(elapsed: 0, timestamp: now, rate: state.isPlaying ? 1.0 : 0.0)
+        ignoreNowPlayingUntil = .distantPast
         sendMRCommand(5) // Previous = 5
     }
 
@@ -188,12 +269,19 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
 
     func seek(to progress: Double) {
         let seconds = min(max(progress, 0), max(state.duration, 0))
+        let now = Date()
+        let rate = state.isPlaying ? 1.0 : 0.0
+
+        // Immediately anchor to the target on release and ignore divergent nowPlayingInfo values for up to 2.5s
+        anchor = PlaybackAnchor(elapsed: seconds, timestamp: now, rate: rate)
+        ignoreNowPlayingUntil = now.addingTimeInterval(2.5)
+
         var nextState = state
         nextState.progress = seconds
         publish(nextState)
 
         if seekUnsupportedSession {
-            STLog.log("SptTerm: seek called but seek is unsupported for this session (SEEK N/A)")
+            STLog.log("SptTerm: seek called but seek is unsupported for this session (\(STLog.seekNA))")
             return
         }
 
@@ -220,7 +308,8 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
             for strat in orderedStrategies {
                 guard !Task.isCancelled else { return }
 
-                let elapsedBefore = self.currentNowPlayingElapsed()
+                let elapsedBeforeRaw = self.currentNowPlayingElapsed()
+                let elapsedBeforeExtrap = self.anchor.extrapolated(at: Date(), duration: self.state.duration)
                 var cmd: UInt32 = 0
                 var optionKey = strat
                 var ret = false
@@ -257,16 +346,20 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
                 guard !Task.isCancelled else { return }
 
-                let elapsedAfter = self.currentNowPlayingElapsed()
-                let diff = abs(elapsedAfter - seconds)
+                let elapsedAfterRaw = self.currentNowPlayingElapsed()
+                let nowCheck = Date()
+                let expectedExtrap = self.anchor.extrapolated(at: nowCheck, duration: self.state.duration)
+                let diff = abs(elapsedAfterRaw - expectedExtrap)
                 let success = diff < 3.0
 
-                STLog.log("SptTerm: seek attempt [\(strat)] cmd=\(cmd) option=\(optionKey) ret=\(ret ? 1 : 0) before=\(String(format: "%.1f", elapsedBefore)) after=\(String(format: "%.1f", elapsedAfter)) diff=\(String(format: "%.1f", diff)) target=\(String(format: "%.1f", seconds)) -> \(success ? "SUCCESS" : "FAILED")")
+                STLog.log("SptTerm: seek attempt [\(strat)] cmd=\(cmd) option=\(optionKey) ret=\(ret ? 1 : 0) beforeRaw=\(String(format: "%.1f", elapsedBeforeRaw)) beforeExtrap=\(String(format: "%.1f", elapsedBeforeExtrap)) afterRaw=\(String(format: "%.1f", elapsedAfterRaw)) expectedExtrap=\(String(format: "%.1f", expectedExtrap)) diff=\(String(format: "%.1f", diff)) target=\(String(format: "%.1f", seconds)) -> \(success ? "SUCCESS" : "FAILED")")
 
                 if success {
                     anySucceeded = true
+                    self.consecutiveSeekFailures = 0
                     self.tweakDefaults.set(strat, forKey: self.winningStrategyKey)
                     STLog.log("SptTerm: seek winning strategy remembered: \(strat)")
+                    self.anchor = PlaybackAnchor(elapsed: elapsedAfterRaw, timestamp: nowCheck, rate: self.state.isPlaying ? 1.0 : 0.0)
                     await MainActor.run {
                         self.pollNowPlaying()
                     }
@@ -275,12 +368,160 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
             }
 
             if !anySucceeded {
-                self.seekUnsupportedSession = true
-                STLog.log("SptTerm: seek all strategies failed, marking seek unsupported for this session (SEEK N/A)")
-                await MainActor.run {
-                    var unsupp = self.state
-                    unsupp.isSeekSupported = false
-                    self.publish(unsupp)
+                if self.state.isPlaying {
+                    self.consecutiveSeekFailures += 1
+                    STLog.log("SptTerm: seek ladder failed (consecutive failures: \(self.consecutiveSeekFailures)/2)")
+                    if self.consecutiveSeekFailures >= 2 {
+                        self.seekUnsupportedSession = true
+                        STLog.log("SptTerm: seek 2 consecutive full-ladder failures while playing, marking seek unsupported for this session (\(STLog.seekNA))")
+                        await MainActor.run {
+                            var unsupp = self.state
+                            unsupp.isSeekSupported = false
+                            self.publish(unsupp)
+                        }
+                    }
+                } else {
+                    STLog.log("SptTerm: seek ladder failed while paused; not incrementing consecutive failures")
+                }
+            }
+        }
+    }
+
+    // MARK: - Repeat Ladder
+
+    private struct RepeatStrategy {
+        let name: String
+        let cmd: UInt32
+        let optionKey: String?
+    }
+
+    func setRepeatMode(_ mode: RepeatMode) {
+        var next = state
+        next.repeatMode = mode
+        publish(next)
+
+        if repeatUnsupportedSession {
+            STLog.log("SptTerm: repeat called but repeat is unsupported for this session (\(STLog.repeatNA))")
+            return
+        }
+
+        repeatTask?.cancel()
+        repeatTask = Task { [weak self] in
+            guard let self else { return }
+
+            let targetInt: Int
+            let targetType: MPRepeatType
+            switch mode {
+            case .off:
+                targetInt = 0
+                targetType = .off
+            case .one:
+                targetInt = 1
+                targetType = .one
+            case .all:
+                targetInt = 2
+                targetType = .all
+            }
+
+            // MediaRemote Repeat candidates:
+            // 1. AdvanceRepeatMode = 7 (nil options)
+            // 2. ChangeRepeatMode = 25 (from MediaRemoteSPI.h), option "kMRMediaRemoteOptionRepeatMode"
+            // 3. ChangeRepeatMode = 25, option "RepeatMode"
+            // 4. ChangeRepeatMode = 27 (alternative candidate), option "kMRMediaRemoteOptionRepeatMode"
+            // 5. ChangeRepeatMode = 14 (alternative candidate), option "kMRMediaRemoteOptionRepeatMode"
+            let strategies: [RepeatStrategy] = [
+                RepeatStrategy(name: "AdvanceRepeatMode(7)", cmd: 7, optionKey: nil),
+                RepeatStrategy(name: "ChangeRepeatMode(25,kMRMediaRemoteOptionRepeatMode)", cmd: 25, optionKey: "kMRMediaRemoteOptionRepeatMode"),
+                RepeatStrategy(name: "ChangeRepeatMode(25,RepeatMode)", cmd: 25, optionKey: "RepeatMode"),
+                RepeatStrategy(name: "ChangeRepeatMode(27,kMRMediaRemoteOptionRepeatMode)", cmd: 27, optionKey: "kMRMediaRemoteOptionRepeatMode"),
+                RepeatStrategy(name: "ChangeRepeatMode(14,kMRMediaRemoteOptionRepeatMode)", cmd: 14, optionKey: "kMRMediaRemoteOptionRepeatMode")
+            ]
+
+            var ordered = strategies
+            if let winning = self.tweakDefaults.string(forKey: self.winningRepeatStrategyKey),
+               let idx = ordered.firstIndex(where: { $0.name == winning }) {
+                let w = ordered.remove(at: idx)
+                ordered.insert(w, at: 0)
+            }
+
+            var verifiedSuccess = false
+            var anyCommandAccepted = false
+
+            for strat in ordered {
+                guard !Task.isCancelled else { return }
+
+                STLog.log("SptTerm: repeat trying candidate cmd=\(strat.cmd) name=\(strat.name) target=\(targetInt)(\(mode.rawValue))")
+
+                let commandCenter = MPRemoteCommandCenter.shared()
+                let repeatCmd = commandCenter.changeRepeatModeCommand
+                let typeBefore = repeatCmd.currentRepeatType
+                let isEnabledBefore = repeatCmd.isEnabled
+
+                guard let handle = dlopen("/System/Library/PrivateFrameworks/MediaRemote.framework/MediaRemote", RTLD_NOW) else {
+                    STLog.log("SptTerm: dlopen MediaRemote failed in repeat ladder")
+                    continue
+                }
+
+                var ret = false
+                if let sym = dlsym(handle, "MRMediaRemoteSendCommand") {
+                    let fn = unsafeBitCast(sym, to: MRMediaRemoteSendCommandFunction.self)
+                    if let key = strat.optionKey {
+                        let options = [key: NSNumber(value: targetInt)] as NSDictionary
+                        ret = fn(strat.cmd, options)
+                    } else {
+                        ret = fn(strat.cmd, nil)
+                    }
+                }
+                dlclose(handle)
+
+                if ret {
+                    anyCommandAccepted = true
+                }
+
+                // Wait 1.0 s to verify with MPRemoteCommandCenter
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                guard !Task.isCancelled else { return }
+
+                let typeAfter = repeatCmd.currentRepeatType
+                let isEnabledAfter = repeatCmd.isEnabled
+
+                STLog.log("SptTerm: repeat candidate cmd=\(strat.cmd) ret=\(ret ? 1 : 0) before=\(typeBefore.rawValue) after=\(typeAfter.rawValue) isEnabled=\(isEnabledAfter) target=\(targetInt)")
+
+                // Verify result matches expected target
+                if typeAfter == targetType {
+                    verifiedSuccess = true
+                    self.tweakDefaults.set(strat.name, forKey: self.winningRepeatStrategyKey)
+                    STLog.log("SptTerm: repeat winning strategy verified: \(strat.name)")
+                    await MainActor.run {
+                        var upd = self.state
+                        upd.isRepeatSupported = true
+                        upd.isRepeatUnverified = false
+                        self.publish(upd)
+                    }
+                    break
+                }
+            }
+
+            if !verifiedSuccess {
+                if anyCommandAccepted {
+                    // Command was accepted by MediaRemote, but state cannot be verified via MPRemoteCommandCenter
+                    STLog.log("SptTerm: repeat state cannot be read back from MPRemoteCommandCenter (\(STLog.repeatUnverified))")
+                    await MainActor.run {
+                        var unverified = self.state
+                        unverified.isRepeatSupported = true
+                        unverified.isRepeatUnverified = true
+                        self.publish(unverified)
+                    }
+                } else {
+                    // Every attempt failed
+                    self.repeatUnsupportedSession = true
+                    STLog.log("SptTerm: repeat all strategies failed, marking repeat unsupported (\(STLog.repeatNA))")
+                    await MainActor.run {
+                        var unsupp = self.state
+                        unsupp.isRepeatSupported = false
+                        unsupp.isRepeatUnverified = false
+                        self.publish(unsupp)
+                    }
                 }
             }
         }
@@ -353,12 +594,6 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         } else {
             next.likedTrackIDs.insert(current.id)
         }
-        publish(next)
-    }
-
-    func setRepeatMode(_ mode: RepeatMode) {
-        var next = state
-        next.repeatMode = mode
         publish(next)
     }
 

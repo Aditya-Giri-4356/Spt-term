@@ -192,6 +192,23 @@ struct ExecPlaceholderView: View {
             } else {
                 consoleLines.append("invalid seek target: \(secStr)")
             }
+        } else if lower == "repeat" {
+            let next: RepeatMode
+            switch player.state.repeatMode {
+            case .off: next = .all
+            case .all: next = .one
+            case .one: next = .off
+            }
+            player.setRepeatMode(next)
+            consoleLines.append("> repeat: cycled to \(next.rawValue.uppercased())")
+        } else if lower.hasPrefix("repeat ") {
+            let modeStr = String(trimmed.dropFirst(7)).trimmingCharacters(in: .whitespaces).lowercased()
+            if let mode = RepeatMode(rawValue: modeStr) {
+                player.setRepeatMode(mode)
+                consoleLines.append("> repeat: set to \(mode.rawValue.uppercased())")
+            } else {
+                consoleLines.append("invalid repeat mode: \(modeStr) (use off, all, one)")
+            }
         } else if lower == "log" {
             let lines = STLog.shared.lastLines(40)
             if lines.isEmpty {

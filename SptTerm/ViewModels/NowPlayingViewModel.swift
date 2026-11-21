@@ -61,10 +61,23 @@ final class NowPlayingViewModel: ObservableObject {
     }
 
     var repeatSymbol: String {
+        if !state.isRepeatSupported {
+            return "⟲"
+        }
         switch state.repeatMode {
         case .off: return "⟲"
         case .all: return "⟲"
         case .one: return "⟲¹"
+        }
+    }
+
+    var repeatLabel: String {
+        if !state.isRepeatSupported {
+            return STLog.repeatNA
+        } else if state.isRepeatUnverified {
+            return STLog.repeatUnverified
+        } else {
+            return state.repeatMode.label
         }
     }
 
@@ -96,6 +109,10 @@ final class NowPlayingViewModel: ObservableObject {
 
     func cycleRepeat() {
         TermHaptic.tap()
+        guard state.isRepeatSupported else {
+            STLog.log("SptTerm: repeat called but repeat is unsupported (\(STLog.repeatNA))")
+            return
+        }
         let next: RepeatMode
         switch state.repeatMode {
         case .off: next = .all
