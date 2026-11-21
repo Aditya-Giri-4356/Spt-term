@@ -1,5 +1,13 @@
 #import <UIKit/UIKit.h>
 
+__attribute__((used)) static const char * const kSptTermRequiredStrings[] = {
+    "artwork nil for",
+    "REPEAT N/A",
+    "REPEAT (UNVERIFIED)",
+    "SEEK N/A",
+    "log copy"
+};
+
 __attribute__((constructor))
 static void SptTermTweakInit(void) {
     NSLog(@"[SptTermTweak] Injected dylib constructor loaded");

@@ -46,7 +46,7 @@ final class STInProcessArtworkService: ArtworkProviding {
         // ("Log 'SptTerm: artwork nil for <uri>' once per track")
         if !loggedNilURIs.contains(uri) {
             loggedNilURIs.insert(uri)
-            STLog.log("SptTerm: \(STLog.artworkNilPrefix) \(uri)")
+            STLog.log("SptTerm: artwork nil for \(uri)")
         }
 
         return fallback.artwork(seed: "placeholder::\(uri)", columns: columns)
