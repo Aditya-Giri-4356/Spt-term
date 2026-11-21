@@ -25,6 +25,7 @@ final class STSpotifyAuth: NSObject {
     private let storageKey = "sptterm.token"
     private var session: ASWebAuthenticationSession?
     private var inFlight: Task<STToken, Error>?
+    private var currentPKCE: STPKCE?
 
     var authorizedPublisher: AnyPublisher<Bool, Never> {
         $isAuthorized.eraseToAnyPublisher()
@@ -39,10 +40,23 @@ final class STSpotifyAuth: NSObject {
         guard STSpotifyConfig.isConfigured else { throw STAuthError.notConfigured }
 
         let pkce = STPKCE()
+        currentPKCE = pkce
         let callback = try await presentSession(url: authorizationURL(pkce: pkce))
         guard let code = queryValue("code", in: callback) else { throw STAuthError.malformed }
 
         persist(try await exchange(code: code, verifier: pkce.verifier))
+    }
+
+    @discardableResult
+    func handle(url: URL) -> Bool {
+        guard url.scheme == "sptterm" else { return false }
+        guard let code = queryValue("code", in: url), let pkce = currentPKCE else { return false }
+        Task {
+            if let token = try? await exchange(code: code, verifier: pkce.verifier) {
+                persist(token)
+            }
+        }
+        return true
     }
 
     func validToken() async throws -> String {

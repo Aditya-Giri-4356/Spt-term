@@ -75,7 +75,7 @@ final class STWebLibraryService: LibraryServiceProtocol {
 
     func fetchPlaylist(id: String) async throws -> Playlist? {
         let dto = try await api.playlist(id)
-        let page = try await api.playlistTracks(id: id)
+        let page = try await api.playlistTracks(id)
         let tracks = STSpotifyMapping.tracks(page.items?.compactMap(\.track))
         let base = STSpotifyMapping.playlist(dto)
         return Playlist(
@@ -95,7 +95,7 @@ final class STWebLibraryService: LibraryServiceProtocol {
         var seen = Set<String>()
         var out: [Artist] = []
 
-        for track in saved.items.map(\.track) {
+        for track in saved.items.map(\STSavedTrackDTO.track) {
             for dto in track.artists ?? [] {
                 let mapped = STSpotifyMapping.artist(dto)
                 guard !mapped.id.isEmpty, seen.insert(mapped.id).inserted else { continue }
@@ -110,7 +110,7 @@ final class STWebLibraryService: LibraryServiceProtocol {
     }
 
     func fetchTracks(forPlaylistID playlistID: String) async throws -> [Track] {
-        let page = try await api.playlistTracks(id: playlistID)
+        let page = try await api.playlistTracks(playlistID)
         return STSpotifyMapping.tracks(page.items?.compactMap(\.track))
     }
 

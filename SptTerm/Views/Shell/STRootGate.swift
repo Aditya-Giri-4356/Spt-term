@@ -19,6 +19,7 @@ struct STRootGate: View {
         .environment(\.audioEffectsService, container.effects)
         .environment(\.artworkProvider, container.artwork)
         .task { container.start() }
+        .onOpenURL { url in container.auth.handle(url: url) }
     }
 
     private var signedOut: some View {

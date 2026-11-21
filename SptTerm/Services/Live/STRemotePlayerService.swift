@@ -1,6 +1,9 @@
 import Combine
 import Foundation
 import SpotifyiOS
+#if canImport(AVFoundation) && os(iOS)
+import AVFoundation
+#endif
 
 /// Drives the local Spotify app over App Remote. App Remote is used instead of
 /// the Web API because Eevee's premium patch is local: the Web API still sees a
@@ -16,6 +19,10 @@ final class STRemotePlayerService: NSObject, PlayerServiceProtocol {
     private var reconnectAttempt = 0
     private var reconnectTask: Task<Void, Never>?
 
+    #if canImport(AVFoundation) && os(iOS)
+    private var volumeObserver: NSKeyValueObservation?
+    #endif
+
     var state: PlayerState { stateSubject.value }
 
     var statePublisher: AnyPublisher<PlayerState, Never> {
@@ -26,20 +33,45 @@ final class STRemotePlayerService: NSObject, PlayerServiceProtocol {
         self.auth = auth
         self.webAPI = webAPI
         super.init()
+
+        #if canImport(AVFoundation) && os(iOS)
+        let audioSession = AVAudioSession.sharedInstance()
+        try? audioSession.setActive(true)
+        update { $0.volume = Double(audioSession.outputVolume) }
+
+        volumeObserver = audioSession.observe(\.outputVolume, options: [.new]) { [weak self] session, _ in
+            DispatchQueue.main.async {
+                self?.setVolume(Double(session.outputVolume))
+            }
+        }
+        #endif
+    }
+
+    deinit {
+        #if canImport(AVFoundation) && os(iOS)
+        volumeObserver?.invalidate()
+        #endif
     }
 
     func connect() {
         guard STSpotifyConfig.isConfigured else { return }
 
-        let configuration = SPTConfiguration(
-            clientID: STSpotifyConfig.clientID,
-            redirectURL: URL(string: STSpotifyConfig.redirectURI)!
-        )
+        Task { [weak self] in
+            guard let self else { return }
+            let token = try? await self.auth.validToken()
+            await MainActor.run {
+                let configuration = SPTConfiguration(
+                    clientID: STSpotifyConfig.clientID,
+                    redirectURL: URL(string: STSpotifyConfig.redirectURI)!
+                )
 
-        let appRemote = SPTAppRemote(configuration: configuration, logLevel: .debug)
-        appRemote.delegate = self
-        remote = appRemote
-        appRemote.connect()
+                let appRemote = SPTAppRemote(configuration: configuration, logLevel: .debug)
+                appRemote.connectionParameters.accessToken = token
+                appRemote.delegate = self
+                self.remote = appRemote
+                appRemote.connect()
+            }
+        }
     }
 
     func disconnect() {
@@ -148,7 +180,7 @@ final class STRemotePlayerService: NSObject, PlayerServiceProtocol {
         update { $0.volume = value.clampedUnit }
     }
 
-    private func remoteMode(_ mode: RepeatMode) -> SPTAppRemoteRepeatMode {
+    private func remoteMode(_ mode: RepeatMode) -> SPTAppRemotePlaybackOptionsRepeatMode {
         switch mode {
         case .off: return .off
         case .all: return .context
@@ -196,12 +228,12 @@ extension STRemotePlayerService: SPTAppRemotePlayerStateDelegate {
             state.currentTrack = mapped
             state.isPlaying = !playerState.isPaused
             state.progress = Double(playerState.playbackPosition) / 1000
-            state.isShuffled = playerState.isShuffleEnabled
-            state.repeatMode = self.localMode(playerState.repeatMode)
+            state.isShuffled = playerState.playbackOptions.isShuffling
+            state.repeatMode = self.localMode(playerState.playbackOptions.repeatMode)
         }
     }
 
-    private func localMode(_ mode: SPTAppRemoteRepeatMode) -> RepeatMode {
+    private func localMode(_ mode: SPTAppRemotePlaybackOptionsRepeatMode) -> RepeatMode {
         switch mode {
         case .context: return .all
         case .track: return .one

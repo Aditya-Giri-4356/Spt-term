@@ -88,7 +88,13 @@ final class STServiceContainer: ObservableObject {
     init() {
         auth.authorizedPublisher
             .receive(on: RunLoop.main)
-            .assign(to: &$isAuthorized)
+            .sink { [weak self] authorized in
+                self?.isAuthorized = authorized
+                if authorized {
+                    (self?.player as? STRemotePlayerService)?.connect()
+                }
+            }
+            .store(in: &cancellables)
     }
 
     func start() {

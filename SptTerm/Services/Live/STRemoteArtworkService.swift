@@ -1,5 +1,13 @@
+import SpotifyiOS
 import SwiftUI
 import UIKit
+
+private final class STImageItem: NSObject, SPTAppRemoteImageRepresentable {
+    let imageIdentifier: String
+    init(imageIdentifier: String) {
+        self.imageIdentifier = imageIdentifier
+    }
+}
 
 /// Raster covers converted to the glyph grid the design uses. The provider is
 /// synchronous, so this returns cached or generated art immediately and fills
@@ -34,14 +42,15 @@ final class STRemoteArtworkService: ArtworkProviding {
         lock.unlock()
         guard !alreadyRunning else { return }
 
-        remote()?.imageAPI?.image(atURI: uri) { [weak self] image, error in
+        let item = STImageItem(imageIdentifier: uri)
+        remote()?.imageAPI?.fetchImage(forItem: item, with: .zero) { [weak self] result, error in
             guard let self else { return }
 
             self.lock.lock()
             self.inFlight.remove(uri)
             self.lock.unlock()
 
-            guard error == nil, let image else { return }
+            guard error == nil, let image = result as? UIImage else { return }
 
             let matrix = Self.matrix(from: image, columns: columns)
             let accent = Self.accent(from: image)

@@ -55,6 +55,20 @@ enum STSpotifyMapping {
         )
     }
 
+    static func album(_ dto: STAlbumPageDTO) -> Album {
+        Album(
+            id: dto.id,
+            title: dto.name,
+            artistID: dto.artists?.first?.id ?? "",
+            artistName: artistLine(dto.artists),
+            year: year(dto.release_date),
+            genre: "UNKNOWN",
+            trackIDs: [],
+            formatLabel: "AAC",
+            summary: "\(artistLine(dto.artists)) • \(year(dto.release_date))"
+        )
+    }
+
     static func albums(_ dtos: [STAlbumDTO]?) -> [Album] {
         (dtos ?? []).map(album)
     }

@@ -1,0 +1,32 @@
+name: SptTerm
+options:
+  bundleIdPrefix: com.aditya
+  deploymentTarget:
+    iOS: "16.0"
+
+packages:
+  SpotifyiOS:
+    url: https://github.com/spotify/ios-sdk
+    branch: master
+
+targets:
+  SptTerm:
+    type: application
+    platform: iOS
+    deploymentTarget: "16.0"
+    sources:
+      - path: SptTerm
+        excludes:
+          - "**/SptTermTweak/**"
+    dependencies:
+      - package: SpotifyiOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.aditya.sptterm
+        PRODUCT_NAME: SptTerm
+        SWIFT_VERSION: "5.0"
+        DEVELOPMENT_TEAM: "QJW7XRMR4L"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: SptTerm/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"

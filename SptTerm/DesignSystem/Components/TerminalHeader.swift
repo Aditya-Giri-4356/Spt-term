@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(AVFoundation)
+import AVFoundation
+#endif
 
 /// Fixed top chrome shared by every screen: volume telemetry, wordmark,
 /// user tag and the quick theme switcher.
@@ -10,10 +13,11 @@ struct TerminalHeader: View {
     var volume: Double? = nil
     var connectionLabel: String = "[pts/0] :: ONLINE"
 
+    @State private var currentVolume: Double = 0.5
     @State private var isDraggingVolume = false
 
     private var effectiveVolume: Double {
-        volume ?? playerService.state.volume
+        volume ?? currentVolume
     }
 
     var body: some View {
@@ -27,7 +31,7 @@ struct TerminalHeader: View {
             }
 
             HStack(alignment: .firstTextBaseline, spacing: TermSpace.xs) {
-                Text("SPT.TERM V2.4.0")
+                Text("SPT.TERM")
                     .termType(TermType.headlineMD, color: theme.palette.accent)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -65,6 +69,32 @@ struct TerminalHeader: View {
                 .fill(theme.palette.hairline)
                 .frame(height: 1)
         }
+        .onAppear {
+            if let volume {
+                currentVolume = volume
+            } else {
+                #if canImport(AVFoundation) && os(iOS)
+                let audioSession = AVAudioSession.sharedInstance()
+                try? audioSession.setActive(true)
+                currentVolume = Double(audioSession.outputVolume)
+                #else
+                currentVolume = playerService.state.volume
+                #endif
+            }
+        }
+        .onReceive(playerService.statePublisher) { newState in
+            if !isDraggingVolume && volume == nil {
+                currentVolume = newState.volume
+            }
+        }
+        #if canImport(AVFoundation) && os(iOS)
+        .onReceive(AVAudioSession.sharedInstance().publisher(for: \.outputVolume)) { newVol in
+            if !isDraggingVolume && volume == nil {
+                currentVolume = Double(newVol)
+                playerService.setVolume(Double(newVol))
+            }
+        }
+        #endif
     }
 
     private var volumeControl: some View {
@@ -77,6 +107,7 @@ struct TerminalHeader: View {
                     .onChanged { value in
                         isDraggingVolume = true
                         let fraction = max(0, min(1, Double(value.location.x / 110.0)))
+                        currentVolume = fraction
                         playerService.setVolume(fraction)
                     }
                     .onEnded { _ in

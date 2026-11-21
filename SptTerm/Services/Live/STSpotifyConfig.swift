@@ -15,6 +15,8 @@ enum STSpotifyConfig {
         "playlist-read-private",
         "playlist-read-collaborative",
         "user-read-private",
+        "app-remote-control",
+        "streaming",
     ]
 
     static var scopeString: String { scopes.joined(separator: " ") }
