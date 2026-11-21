@@ -1,4 +1,5 @@
 import Foundation
+import os.log
 
 /// Metadata client over the Web API. Playback control lives in
 /// `STRemotePlayerService` — the Web API 403s on Free accounts server-side.
@@ -87,7 +88,12 @@ final class STSpotifyWebAPI {
             resolvingAgainstBaseURL: false
         )!
         if !query.isEmpty { components.queryItems = query }
-        guard let url = components.url else { throw STAuthError.malformed }
+        guard let url = components.url else {
+            os_log("STSpotifyWebAPI: Malformed URL for path: %{public}@", log: OSLog.default, type: .error, path)
+            throw STAuthError.malformed
+        }
+
+        os_log("STSpotifyWebAPI: HTTP Request: %{public}@ %{public}@", log: OSLog.default, type: .info, method, url.absoluteString)
 
         return try await auth.withToken { token in
             var request = URLRequest(url: url)
@@ -99,7 +105,18 @@ final class STSpotifyWebAPI {
             }
 
             let (data, response) = try await URLSession.shared.data(for: request)
-            guard let http = response as? HTTPURLResponse else { throw STAuthError.malformed }
+            guard let http = response as? HTTPURLResponse else {
+                os_log("STSpotifyWebAPI: Response is not an HTTPURLResponse for %{public}@", log: OSLog.default, type: .error, url.absoluteString)
+                throw STAuthError.malformed
+            }
+
+            os_log("STSpotifyWebAPI: HTTP Response: %{public}@ %{public}@ -> %d", log: OSLog.default, type: .info, method, url.absoluteString, http.statusCode)
+
+            if http.statusCode == 401 || http.statusCode == 403 {
+                let errorBody = String(data: data, encoding: .utf8) ?? "<non-utf8 error body>"
+                os_log("STSpotifyWebAPI: HTTP %d Error Body: %{public}@", log: OSLog.default, type: .error, http.statusCode, errorBody)
+            }
+
             guard (200..<300).contains(http.statusCode) else {
                 throw STAuthError.http(http.statusCode)
             }

@@ -11,6 +11,9 @@
 - **Unified Consumption**:
   - **Spotify Web API**: Uses Bearer token via `STSpotifyAuth.withToken` (with automatic single-retry refresh on 401).
   - **Spotify App Remote**: Consumes the same access token in `STRemotePlayerService.connect()` via `appRemote.connectionParameters.accessToken = token`.
+- **Storage & Fallback Resilience**:
+  - Dual-layer token persistence: primary Keychain storage (`kSecClassGenericPassword`, service: bundle ID) with an automatic in-memory fallback (`inMemoryToken`) to prevent authorization/API failures when Keychain access is constrained.
+  - Diagnostic logging via `os_log` tracking token exchanges (length, expiry, save status), token retrieval, and HTTP API calls.
 
 ### 2. Project Generation & Build
 - `project.pbxproj` was restored to standard Xcode format using **XcodeGen** (`project.yml`).
