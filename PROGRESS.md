@@ -52,4 +52,5 @@
 | Shuffle Ladder & Verification | **COMPILES ONLY via UI hook, device result pending; MR strategies = not working on device** | UI hook route by default, second-mode menu diffing & standard shuffle activation, manual try/pin preserved |
 | Audio FX (`STAudioTweaksService`, EQ UI) | **MOCK/UI-ONLY** | Visible `"UI ONLY - does not process Spotify audio"` badge; state persisted to tweak suite |
 | Web API (Phase A) | **BLOCKED** | Blocked by Spotify Web API app-owner Premium requirement (HTTP 403 on `/me/playlists`) |
+| Playlist Scan (LIB tab & STLibraryCache) | **COMPILES ONLY, device result pending, limited to rows visible on screen** | Discovers on-screen playlist elements via accessibility UI hook inside scrollable views, merges to STLibraryCache (capped at 500, deduped by label), activates on-screen playlists or warns if not visible |
 | Phase B Milestone 2 In-Process Tweak Build | **COMPILES ONLY** | `SptTermTweak` (Debug + Release) and `SptTerm` schemes compile cleanly with zero errors |

@@ -17,7 +17,9 @@ __attribute__((used)) static const char * const kSptTermRequiredStrings[] = {
     "no candidates",
     "shuffle menu ambiguous",
     "hitch",
-    "lyrics: off"
+    "lyrics: off",
+    "libscan",
+    "PLAYLISTS"
 };
 
 __attribute__((constructor))
