@@ -1,147 +1,104 @@
-# SptTerm (Spotify Terminal UI for iOS)
+# SptTerm
 
-SptTerm is a retro-terminal phosphor CRT music player for iOS, translating the command-line terminal and vintage vacuum-tube monitor aesthetic into an ergonomic, touch-first mobile interface.
+A retro-terminal / CRT-style SwiftUI Spotify player interface for iOS featuring authentic ASCII panels, tactile leveled tab navigation (`[1:PLAY]`, `[2:LIB]`, `[3:EXEC]`, `[4:THEME]`), 37 CRT phosphor themes, and real-time ASCII artwork rasterization.
 
-The project is built natively using Swift and SwiftUI, targeting iOS 16.0 and later, optimized for modern iPhones (including iPhone 14) with dynamic safe area handling, responsive layout constraints, and tactile hardware interaction.
-
----
-
-## Current Status and Architecture
-
-SptTerm is currently in an active prototype state with a complete, compile-clean SwiftUI navigation shell, dedicated design system, hardware telemetry synchronization, and decoupled service layers.
-
-### 1. Navigation Shell and Leveled Tab Bar
-- Four primary navigation tabs with fixed, leveled 50pt tactile keycaps:
-  - Tab 1: [1:PLAY] [ > ] - Home screen, continue playing shelf, bento cards, and active deck.
-  - Tab 2: [2:LIB] [ = ] - File-tree music library, album/playlist directories, and crates.
-  - Tab 3: [3:EXEC] [ >_ ] - Audio tuning, 10-band equalizer, and DSP executor console.
-  - Tab 4: [4:THEME] [ * ] - Phosphor CRT theme catalog and config manager.
-- Each tab features a dedicated single NavigationStack (zero nested stacks) with routing to detail views (Album, Playlist, Artist, and Search).
-- The navigation bar is leveled with uniform button frames, 6pt spacing, and authentic ASCII logo badges.
-
-### 2. Audio Playback and Telemetry
-- MiniPlayer: Floats directly above the navigation bar with matched-geometry artwork transitions, live playback toggle, track metadata, and mini progress bar.
-- Full-Screen Now Playing View:
-  - Displays ASCII album art matrix, live VU/spectrum meter, transport controls, and synchronized lyrics panel.
-  - Hardware Volume Synchronization: Live two-way sync with physical iPhone volume buttons via AVAudioSession observation.
-  - Interactive ASCII Volume Scrubber: Draggable volume telemetry in the header (`[VOL: [########..]]`) and Now Playing view.
-  - Interactive Swipe-to-Dismiss: Dragging down on the window moves the entire interface 1:1 with the finger; releasing past the threshold smoothly collapses the window back into the MiniPlayer on top of the navbar.
-  - Dedicated pull-down grab bar (`[ -- v COLLAPSE -- ]`) with tap and drag-to-dismiss support.
-
-### 3. Phosphor TUI Design System
-- Monospaced typography rhythm using Apple SF Mono (with JetBrains Mono token fallbacks).
-- 37 hand-tuned and dynamically derived color themes (Matrix P1 Green, CRT Amber, Cyberpunk Pink, Nord Cyan, Commodore 64, etc.).
-- CRT scanline raster overlay and ambient phosphor bloom effects.
-- Active states styled as inverted phosphor blocks with haptic feedback (`TermHaptic.tap()`).
-
-### 4. Protocol-Driven Architecture
-- Views interact exclusively through decoupled Swift protocols:
-  - `PlayerServiceProtocol`: Playback state, track progress, volume, play/pause/skip.
-  - `LibraryServiceProtocol`: Albums, playlists, search index, recent items.
-  - `AudioEffectsServiceProtocol`: Equalizer bands and presets.
-  - `ArtworkProviding`: ASCII matrix generation and dominant color derivation.
-- Mock services provide instant offline development and testing. The codebase is structured for direct integration with the Spotify iOS App Remote SDK or Spotify Web API.
+SptTerm consists of two components:
+1. **Phase A (Standalone App)**: Standalone iOS client application (`com.aditya.sptterm`).
+2. **Phase B (`SptTermTweak.dylib`)**: In-process overlay dynamic library injected into a sideloaded Spotify IPA, hosting the full SptTerm interface in a floating window alongside the official Spotify client.
 
 ---
 
-## Repository Structure
+## Status
 
-```
-SptTerm/
-├── SptTermApp.swift             # Main app entry point
-├── DesignSystem/
-│   ├── Components/              # 18 custom TUI components (ASCIIPanel, SpectrumBars, etc.)
-│   ├── Foundation/              # Typography, Spacing, Radii, Themes, Haptics, Motion
-│   └── Modifiers/               # Scanlines, Phosphor glow, Monospace type modifiers
-├── Models/                      # Track, Album, Artist, Playlist, PlayerState, Route
-├── Services/                    # Decoupled protocols and mock implementations
-├── ViewModels/                  # Observable ViewModels (NowPlaying, Home, Library, Search)
-└── Views/
-    ├── Detail/                  # Album, Playlist, and Collection detail screens
-    ├── Library/                 # Terminal file-tree library browser
-    ├── MiniPlayer/              # Compact floating player view
-    ├── NowPlaying/              # Full-screen player with live ASCII spectrum and scrubber
-    ├── Search/                  # Command-line search console
-    └── Shell/                   # Root shell, leveled tab bar, and navigation stacks
-```
+| Feature / Subsystem | Status | Notes |
+|---|---|---|
+| Overlay Window + Draggable Launch Pill | **VERIFIED (user-reported on a real device, iOS 27.0)** | Floating `UIWindow` above alert level hosting `UIHostingController`; draggable 44x44pt pill with persistence |
+| Now-Playing Metadata | **VERIFIED (user-reported on a real device, iOS 27.0)** | Track title, artist, album, duration, elapsed time, and rate observed from `MPNowPlayingInfoCenter` |
+| Transport Controls (Play / Pause / Next / Prev) | **VERIFIED (user-reported on a real device, iOS 27.0)** | Dispatched in-process via MediaRemote command primitives (commands 0, 1, 4, 5) |
+| Seek Control + Progress Sync | **VERIFIED (user-reported on a real device, iOS 27.0)** | Scrubber scrubbing and `seek <seconds>` via MediaRemote command 24; anchor extrapolation and sync window |
+| Phosphor Themes | **VERIFIED (user-reported on a real device, iOS 27.0)** | All 37 monochrome and amber phosphor themes, scanlines, and bloom; persisted to isolated tweak suite |
+| Session Library | **VERIFIED (user-reported on a real device, iOS 27.0)** | Session track history deduplicated by URI (newest first, capped at 200 items); tap to play via URI |
+| ASCII Artwork | **VERIFIED (user-reported on a real device, iOS 27.0)** | Real-time pixel-to-glyph ASCII rasterization from `MPMediaItemArtwork` (partial: some covers missing after skips) |
+| Shuffle Control | **VERIFIED (user-reported on a real device, iOS 27.0)** | Triggered via Spotify's own on-screen button using the accessibility UI hook; handles second-mode menu diffing |
+| Synced Lyrics | **VERIFIED (user-reported on a real device, iOS 27.0)** | LRCLIB integration toggleable via `lyrics on` in `[3:EXEC]`; fetches from the next track |
+| Repeat Control | **NOT WORKING ON DEVICE** | UI hook shows "REPEAT N/A" (investigation pending). MediaRemote repeat/shuffle route is dead (device reports currentType=0, no state keys). |
+| Audio FX & Equalizer | **UI ONLY** | Displays 10-band equalizer and DSP presets; explicitly marked "does not process Spotify audio" |
+| Phase A Spotify Web API | **BLOCKED** | Spotify Web API blocked by developer dashboard app owner requirement for Spotify Premium (HTTP 403) |
+| Stats, Pill Polish, Config Loader, Tests, Docs | **NOT YET RE-ADDED** | Implemented on `feat/opus-batch`; not yet merged into `feat/stable` |
 
 ---
 
-## Prerequisites
+## How It Works
 
-- macOS 14.0 (Sonoma) or macOS 15.0 (Sequoia)
-- Xcode 15.0 or Xcode 16.0+
-- iOS 16.0+ SDK (Command Line Tools installed via `xcode-select --install`)
-- Optional: Physical iPhone with iOS 16+ or iOS Simulator
+SptTerm operates in-process inside Spotify via `SptTermTweak.dylib`:
+- **Window Layering**: An injected dynamic library constructor creates a non-key floating `UIWindow` configured at `UIWindow.Level.alert + 10.0`, hosting a `UIHostingController` with the SptTerm SwiftUI interface.
+- **Metadata & State**: Polls `MPNowPlayingInfoCenter.default().nowPlayingInfo` on the main run loop to extract track title, artist name, album name, duration, elapsed playback position, and artwork.
+- **Transport & Seeking**: Directly dispatches transport controls (`kMRPlay`, `kMRPause`, `kMRNextTrack`, `kMRPreviousTrack`) and playback position scrubbing (`kMRSetPlaybackPosition`) via dynamically resolved `MRMediaRemoteSendCommand` symbols (`dlopen`/`dlsym`).
+- **Shuffle & UI Interaction**: Interacts directly with Spotify's native on-screen player controls using accessibility-based inspection and activation (`accessibilityActivate` / touch dispatch) when full-screen player views are visible.
 
 ---
 
-## How to Build and Run
+## Build Instructions
 
-### Method 1: Using Xcode (Recommended)
+### Prerequisites
+- macOS Sonoma or Sequoia with Xcode 15+ or 16+
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
+- Apple Command Line Tools (`xcode-select --install`)
 
-1. Clone the repository:
+### Building the Tweak Dylib
+
+1. Generate the Xcode project:
    ```bash
-   git clone https://github.com/Aditya-Giri-4356/Spt-term.git
-   cd Spt-term
+   xcodegen generate
    ```
 
-2. Open the project in Xcode:
-   ```bash
-   open SptTerm.xcodeproj
-   ```
-
-3. Configure Signing (for physical iPhone only):
-   - Select the `SptTerm` project in the left Project Navigator.
-   - Select the `SptTerm` target under Targets.
-   - Go to the **Signing & Capabilities** tab.
-   - Under **Team**, select your Apple ID / Personal Team.
-   - Ensure the Bundle Identifier is unique (e.g. `com.aditya.sptterm`).
-
-4. Select Run Destination:
-   - In the top toolbar destination picker, choose your physical iPhone (e.g. `Aditya's iPhone 14`) or any iOS Simulator (e.g. `iPhone 16 Pro`).
-
-5. Build and Run:
-   - Press `Cmd + R` or click the Play button.
-
----
-
-### Method 2: Command Line (xcodebuild)
-
-You can build the project directly from the terminal without opening the Xcode GUI.
-
-1. Build for iOS Simulator:
+2. Build the `SptTermTweak` dylib in Release configuration:
    ```bash
    xcodebuild -project SptTerm.xcodeproj \
-              -scheme SptTerm \
-              -destination "generic/platform=iOS Simulator" \
-              build
-   ```
-
-2. Typecheck Swift files directly:
-   ```bash
-   xcrun swiftc -typecheck \
-                -warnings-as-errors \
-                -target arm64-apple-ios16.0-simulator \
-                -sdk $(xcrun --show-sdk-path --sdk iphonesimulator) \
-                $(find SptTerm -name "*.swift")
-   ```
-
-3. Build for Physical iOS Device:
-   ```bash
-   xcodebuild -project SptTerm.xcodeproj \
-              -scheme SptTerm \
+              -scheme SptTermTweak \
               -destination "generic/platform=iOS" \
+              -configuration Release \
               build
    ```
 
+The compiled dylib is placed in DerivedData under `Build/Products/Release-iphoneos/SptTermTweak.dylib`.
+
+### Client ID Configuration
+If building the Phase A standalone app, configure your Spotify Developer Client ID:
+- Copy the example configuration to a gitignored local file:
+  ```bash
+  cp Local.xcconfig.example Local.xcconfig
+  ```
+- Edit `Local.xcconfig` to provide your Client ID:
+  ```xcconfig
+  SPOTIFY_CLIENT_ID = YOUR_ACTUAL_CLIENT_ID
+  ```
+- `Local.xcconfig` is ignored by git and must never be committed; `Base.xcconfig` holds only `YOUR_CLIENT_ID`.
+
 ---
 
-## Technical Constraints and Conventions
+## Installation
 
-- Language: Swift 5.9+ / Swift 6 compatible
-- Framework: Pure native SwiftUI (no third-party package dependencies)
-- Audio Integration: AVFoundation (`AVAudioSession` hardware volume observation)
-- Typography: Monospaced character grid discipline using `TermFont.mono`
-- Formatting: Zero warnings with `-warnings-as-errors`
-- Touch Envelopes: All interactive ASCII elements maintain a minimum 44x44pt hit area in compliance with Apple Human Interface Guidelines.
+> **IMPORTANT**: You must supply your **OWN** legally obtained Spotify IPA file. This repository does not contain, host, or distribute any proprietary Spotify binaries or IPA files.
+
+1. **Prepare IPA**: Start with an original Spotify IPA.
+2. **Inject Dylib**: Use [Sideloadly](https://sideloadly.io/) (or your preferred sideloading tool) to inject **only** `SptTermTweak.dylib` into the original IPA.
+3. **Clean Injection Only**: Always inject into the clean, original IPA. Never re-inject into an already modified package.
+4. **Sideload**: Install the resulting IPA to your iOS device using your Apple ID.
+
+---
+
+## Disclaimer & Credits
+
+- **Disclaimer**: This is an unofficial personal research and customization project. SptTerm is not affiliated with, authorized by, maintained by, or in any way officially connected with Spotify AB or any of its subsidiaries. Modifying the Spotify client application likely violates Spotify's Terms of Service; use entirely at your own risk, on your own account and device.
+- **Credits**: Tested alongside [EeveeSpotify](https://github.com/SideloadLabs/EeveeSpotifyReincarnated) (by SideloadLabs). SptTerm is an independent project and does not bundle or include EeveeSpotify source code or binaries.
+
+---
+
+## Known Issues
+
+- **Repeat N/A**: Repeat control currently displays "REPEAT N/A" on device; the UI hook candidate for repeat requires further element hierarchy inspection.
+- **Artwork Cache Misses**: Approximately 2 out of 10 track covers may fail to resolve after rapid track skips.
+- **Tab Change Stammer**: Minor UI thread hitch observed when switching between dense tabs.
+- **Lyrics Initial Track**: Synced lyrics (`lyrics on` in `[3:EXEC]`) does not fetch for the currently playing track immediately upon toggle; fetching begins on the subsequent track change.
+- **File Size**: Select legacy service and view controller files exceed the 300-line recommended threshold and are slated for modular decomposition.
