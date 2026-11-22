@@ -7,49 +7,69 @@ final class STInProcessArtworkService: ArtworkProviding {
 
     private let fallback = MockArtworkService()
     private var cache: [String: TrackArtwork] = [:]
-    private var loggedNilURIs = Set<String>()
     private var currentURI: String?
+    private var currentGeneration: Int = 0
+    private var retryTask: Task<Void, Never>?
     private let lock = NSLock()
+
+    private init() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAppDidBecomeActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+
+    @objc private func handleAppDidBecomeActive() {
+        lock.lock()
+        let uri = currentURI
+        let hasCache = uri != nil ? (cache[uri!] != nil) : false
+        lock.unlock()
+
+        if let uri = uri, !hasCache {
+            STLog.log("SptTerm: artwork app became active, retrying for \(uri)")
+            startRetrySequence(for: uri) { _ in }
+        }
+    }
 
     func artwork(for track: Track, columns: Int = 16) -> TrackArtwork {
         let uri = track.id
         lock.lock()
-        defer { lock.unlock() }
-
-        if currentURI != uri {
+        let previousURI = currentURI
+        let isChanged = (previousURI != uri)
+        if isChanged {
             currentURI = uri
+            currentGeneration += 1
+            STLog.log("SptTerm: artwork (a) track changed for \(uri) (gen \(currentGeneration))")
         }
+        let cached = cache[uri]
+        let storedRows = track.artworkMatrixRows
+        let storedAccentHex = track.artworkAccentHex
+        lock.unlock()
 
-        // 1. If stored ASCII matrix exists on the track itself (from session history), use it
-        if let rows = track.artworkMatrixRows, !rows.isEmpty {
-            let accent = track.artworkAccentHex.map { Color(termHex: $0) } ?? Color(red: 0.0, green: 1.0, blue: 0.4)
-            let art = TrackArtwork(matrix: ASCIIGlyphMatrix(rows: rows), accent: accent)
+        // 1. Stored ASCII matrix from session history
+        if let rows = storedRows, !rows.isEmpty {
+            let accent = storedAccentHex.map { Color(termHex: $0) } ?? Color(red: 0.0, green: 1.0, blue: 0.4)
+            let art = TrackArtwork(matrix: ASCIIGlyphMatrix(rows: rows), accent: accent, accentHex: storedAccentHex)
+            lock.lock()
             cache[uri] = art
+            lock.unlock()
             return art
         }
 
-        // 2. If cached artwork exists for this exact URI, return it
-        // ("If nowPlayingInfo has no artwork but the URI is unchanged, keep the cached cover")
-        // ("Never show the previous track's cover for a new URI")
-        if let cached = cache[uri] {
+        // 2. Cached artwork for this exact URI
+        if let cached {
             return cached
         }
 
-        // 3. Try to resolve live artwork from nowPlayingInfo
-        if let live = resolveLiveArtworkLocked(uri: uri, columns: columns) {
-            cache[uri] = live
-            return live
+        // 3. Cover missing: trigger background resolution with retry sequence, return placeholder frame
+        if isChanged {
+            startRetrySequence(for: uri) { _ in }
         }
 
-        // 4. Live artwork is nil for this URI:
-        // ("If the URI changed and artwork is nil, show the placeholder and retry every poll until it arrives")
-        // ("Log 'SptTerm: artwork nil for <uri>' once per track")
-        if !loggedNilURIs.contains(uri) {
-            loggedNilURIs.insert(uri)
-            STLog.log("SptTerm: artwork nil for \(uri)")
-        }
-
-        return fallback.artwork(seed: "placeholder::\(uri)", columns: columns)
+        let seedKey = uri.hasPrefix("spotify:") ? "placeholder::\(uri)" : "fallback::\(track.title)|\(track.artistName)"
+        return fallback.artwork(seed: seedKey, columns: columns)
     }
 
     func artwork(seed: String, columns: Int) -> TrackArtwork {
@@ -62,54 +82,109 @@ final class STInProcessArtworkService: ArtworkProviding {
         return cache[uri] != nil
     }
 
-    /// Attempts to fetch live artwork from nowPlayingInfo on the main thread and rasterize it.
-    @discardableResult
-    func tryResolveLiveArtwork(for uri: String, columns: Int = 16) -> TrackArtwork? {
+    /// Triggers the backoff retry sequence: 0.25, 0.5, 1, 2, 4, 8, 15 s after track change.
+    func startRetrySequence(for uri: String, onResolved: @escaping (TrackArtwork) -> Void) {
         lock.lock()
-        defer { lock.unlock() }
-        if let cached = cache[uri] {
-            return cached
+        let gen = currentGeneration
+        retryTask?.cancel()
+        lock.unlock()
+
+        retryTask = Task { [weak self] in
+            let intervals: [TimeInterval] = [0.0, 0.25, 0.5, 1.0, 2.0, 4.0, 8.0, 15.0]
+            for delay in intervals {
+                if delay > 0 {
+                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                }
+                guard !Task.isCancelled else { return }
+                guard let self else { return }
+
+                if !self.shouldProceedWithRetry(for: uri, generation: gen) { return }
+
+                if let resolved = await self.fetchAndProcessArtwork(for: uri, generation: gen) {
+                    await MainActor.run {
+                        onResolved(resolved)
+                    }
+                    return
+                }
+            }
         }
-        if let live = resolveLiveArtworkLocked(uri: uri, columns: columns) {
-            cache[uri] = live
-            return live
-        }
-        return nil
     }
 
-    private func resolveLiveArtworkLocked(uri: String, columns: Int) -> TrackArtwork? {
+    private func shouldProceedWithRetry(for uri: String, generation gen: Int) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return currentGeneration == gen && cache[uri] == nil
+    }
+
+    private func commitArtworkIfCurrent(for uri: String, generation: Int, artwork: TrackArtwork) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        guard currentGeneration == generation else { return false }
+        cache[uri] = artwork
+        return true
+    }
+
+    /// Fetches image from MPNowPlayingInfoCenter and converts off main thread.
+    func fetchAndProcessArtwork(for uri: String, generation: Int, columns: Int = 16) async -> TrackArtwork? {
         let cols = max(columns, 8)
         let rows = max(Int((Double(cols) * 0.72).rounded()), 6)
 
-        var uiImage: UIImage?
-        let fetchBlock = { () -> UIImage? in
-            guard let info = MPNowPlayingInfoCenter.default().nowPlayingInfo,
-                  let artwork = info[MPMediaItemPropertyArtwork] as? MPMediaItemArtwork else {
+        // Stage (b) & (c): inspect nowPlayingInfo on main thread
+        let uiImage: UIImage? = await MainActor.run { () -> UIImage? in
+            guard let info = MPNowPlayingInfoCenter.default().nowPlayingInfo else {
+                STLog.log("SptTerm: artwork (b) nowPlaying has artwork=false for \(uri) (info nil)")
                 return nil
             }
-            // Request imageWithSize on main thread at 300x300, and if nil, at artwork's own bounds.size
-            if let img = artwork.image(at: CGSize(width: 300, height: 300)) {
-                return img
+            guard let artwork = info[MPMediaItemPropertyArtwork] as? MPMediaItemArtwork else {
+                STLog.log("SptTerm: artwork (b) nowPlaying has artwork=false for \(uri)")
+                return nil
             }
-            return artwork.image(at: artwork.bounds.size)
-        }
+            STLog.log("SptTerm: artwork (b) nowPlaying has artwork=true for \(uri)")
 
-        if Thread.isMainThread {
-            uiImage = fetchBlock()
-        } else {
-            DispatchQueue.main.sync {
-                uiImage = fetchBlock()
+            // Try candidate sizes: 300x300, artwork.bounds.size, 600x600, 128x128
+            let candidateSizes: [CGSize] = [
+                CGSize(width: 300, height: 300),
+                artwork.bounds.size,
+                CGSize(width: 600, height: 600),
+                CGSize(width: 128, height: 128)
+            ]
+
+            for size in candidateSizes where size.width > 0 && size.height > 0 {
+                if let img = artwork.image(at: size) {
+                    STLog.log("SptTerm: artwork (c) image(at: \(Int(size.width))x\(Int(size.height))) result=ok for \(uri)")
+                    return img
+                } else {
+                    STLog.log("SptTerm: artwork (c) image(at: \(Int(size.width))x\(Int(size.height))) result=nil for \(uri)")
+                }
             }
-        }
-
-        guard let image = uiImage, let matrix = convertToASCIIMatrix(image: image, columns: cols, rows: rows) else {
             return nil
         }
 
-        let dominant = dominantColor(from: image)
-        let accent = dominant?.color ?? Color(red: 0.0, green: 1.0, blue: 0.4)
-        let hex = dominant?.hex ?? "#00FF66"
-        return TrackArtwork(matrix: matrix, accent: accent, accentHex: hex)
+        guard let image = uiImage else { return nil }
+
+        // Stage (d): decode image & convert to ASCII off the main thread
+        let processed: TrackArtwork? = await Task.detached(priority: .userInitiated) { [weak self] () -> TrackArtwork? in
+            guard let self, let matrix = self.convertToASCIIMatrix(image: image, columns: cols, rows: rows) else {
+                STLog.log("SptTerm: artwork (d) ASCII conversion failure for \(uri)")
+                return nil
+            }
+            STLog.log("SptTerm: artwork (d) ASCII conversion success for \(uri)")
+            let dominant = self.dominantColor(from: image)
+            let accent = dominant?.color ?? Color(red: 0.0, green: 1.0, blue: 0.4)
+            let hex = dominant?.hex ?? "#00FF66"
+            return TrackArtwork(matrix: matrix, accent: accent, accentHex: hex)
+        }.value
+
+        guard let artworkResult = processed else { return nil }
+
+        // Stage (e): check generation token before caching and applying
+        guard commitArtworkIfCurrent(for: uri, generation: generation, artwork: artworkResult) else {
+            STLog.log("SptTerm: artwork (e) result discarded (generation mismatch for \(uri))")
+            return nil
+        }
+
+        STLog.log("SptTerm: artwork (e) result applied to UI for \(uri)")
+        return artworkResult
     }
 
     private func convertToASCIIMatrix(image: UIImage, columns: Int, rows: Int) -> ASCIIGlyphMatrix? {
@@ -187,9 +262,9 @@ final class STInProcessArtworkService: ArtworkProviding {
         }
 
         guard count > 0 else { return nil }
-        let r = (totalR / count) / 255.0
-        let g = (totalG / count) / 255.0
-        let b = (totalB / count) / 255.0
+        let r = min(max((totalR / count) / 255.0, 0), 1)
+        let g = min(max((totalG / count) / 255.0, 0), 1)
+        let b = min(max((totalB / count) / 255.0, 0), 1)
         let hex = String(format: "#%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255))
         return (Color(red: r, green: g, blue: b), hex)
     }

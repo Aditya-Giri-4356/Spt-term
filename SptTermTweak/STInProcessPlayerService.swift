@@ -182,11 +182,16 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
             }
         }
 
-        // Live cover missing retry: if artwork is not yet cached for current URI, retry every poll
+        // Live cover missing retry: if artwork is not yet cached for current URI, retry asynchronously
         if let current = next.currentTrack, !STInProcessArtworkService.shared.hasCachedArtwork(for: current.id) {
-            if let resolved = STInProcessArtworkService.shared.tryResolveLiveArtwork(for: current.id) {
-                next.currentTrack?.artworkMatrixRows = resolved.matrix.rows
-                next.currentTrack?.artworkAccentHex = resolved.accentHex
+            STInProcessArtworkService.shared.startRetrySequence(for: current.id) { [weak self] resolved in
+                guard let self else { return }
+                if self.state.currentTrack?.id == current.id {
+                    var updated = self.state
+                    updated.currentTrack?.artworkMatrixRows = resolved.matrix.rows
+                    updated.currentTrack?.artworkAccentHex = resolved.accentHex
+                    self.publish(updated)
+                }
             }
         }
 
