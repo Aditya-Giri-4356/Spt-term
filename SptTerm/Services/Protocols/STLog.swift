@@ -9,6 +9,8 @@ final class STLog {
     static let seekNA = "SEEK N/A"
     static let repeatNA = "REPEAT N/A"
     static let repeatUnverified = "REPEAT (UNVERIFIED)"
+    static let shuffleNA = "SHUFFLE N/A"
+    static let shuffleUnverified = "SHUFFLE (UNVERIFIED)"
     static let artworkNilPrefix = "artwork nil for"
 
     private var buffer: [String] = []

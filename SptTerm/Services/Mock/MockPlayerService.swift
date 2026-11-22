@@ -183,6 +183,16 @@ final class MockPlayerService: PlayerServiceProtocol {
         publish(next)
     }
 
+    func setShuffle(_ enabled: Bool) {
+        var next = state
+        next.isShuffled = enabled
+        publish(next)
+    }
+
+    func sendRawCommand(_ command: UInt32) {
+        STLog.log("MockPlayerService: sendRawCommand(\(command))")
+    }
+
     func setVolume(_ value: Double) {
         var next = state
         next.volume = value.clampedUnit

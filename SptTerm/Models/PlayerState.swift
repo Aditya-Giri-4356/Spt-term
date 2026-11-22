@@ -27,6 +27,8 @@ struct PlayerState: Equatable {
     var isSeekSupported: Bool = true
     var isRepeatSupported: Bool = true
     var isRepeatUnverified: Bool = false
+    var isShuffleSupported: Bool = true
+    var isShuffleUnverified: Bool = false
 
     var isCurrentTrackLiked: Bool {
         guard let currentTrack else { return false }
@@ -58,6 +60,8 @@ struct PlayerState: Equatable {
         likedTrackIDs: [],
         isSeekSupported: true,
         isRepeatSupported: true,
-        isRepeatUnverified: false
+        isRepeatUnverified: false,
+        isShuffleSupported: true,
+        isShuffleUnverified: false
     )
 }

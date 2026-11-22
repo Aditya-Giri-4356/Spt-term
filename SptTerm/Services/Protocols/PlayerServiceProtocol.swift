@@ -22,6 +22,20 @@ protocol PlayerServiceProtocol: AnyObject {
     func toggleLikeCurrentTrack()
     func setRepeatMode(_ mode: RepeatMode)
     func toggleShuffle()
+    func setShuffle(_ enabled: Bool)
+    func sendRawCommand(_ command: UInt32)
     func setVolume(_ value: Double)
     func openURI(_ uri: String)
+}
+
+extension PlayerServiceProtocol {
+    func setShuffle(_ enabled: Bool) {
+        if state.isShuffled != enabled {
+            toggleShuffle()
+        }
+    }
+
+    func sendRawCommand(_ command: UInt32) {
+        STLog.log("SptTerm: sendRawCommand(\(command)) default no-op")
+    }
 }

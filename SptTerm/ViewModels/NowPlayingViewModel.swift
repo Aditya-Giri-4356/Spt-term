@@ -81,6 +81,16 @@ final class NowPlayingViewModel: ObservableObject {
         }
     }
 
+    var shuffleLabel: String {
+        if !state.isShuffleSupported {
+            return STLog.shuffleNA
+        } else if state.isShuffleUnverified {
+            return STLog.shuffleUnverified
+        } else {
+            return "SHUF"
+        }
+    }
+
     // MARK: - Actions
 
     func playPause() {
@@ -104,6 +114,10 @@ final class NowPlayingViewModel: ObservableObject {
 
     func toggleShuffle() {
         TermHaptic.tap()
+        guard state.isShuffleSupported else {
+            STLog.log("SptTerm: shuffle called but shuffle is unsupported (\(STLog.shuffleNA))")
+            return
+        }
         player.toggleShuffle()
     }
 

@@ -37,7 +37,10 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     // MARK: - Repeat State
     private var repeatUnsupportedSession = false
     private var repeatTask: Task<Void, Never>?
-    private let winningRepeatStrategyKey = "sptterm.repeat.winning_strategy"
+
+    // MARK: - Shuffle State
+    private var shuffleUnsupportedSession = false
+    private var shuffleTask: Task<Void, Never>?
 
     private let winningStrategyKey = "sptterm.seek.winning_strategy"
     private let tweakDefaults = UserDefaults(suiteName: "com.aditya.sptterm.tweak") ?? .standard
@@ -68,6 +71,7 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         volumeObserver?.invalidate()
         seekTask?.cancel()
         repeatTask?.cancel()
+        shuffleTask?.cancel()
     }
 
     // MARK: - State & Metadata Observation
@@ -194,26 +198,16 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
 
     // MARK: - MediaRemote Control
 
-    private typealias MRMediaRemoteSendCommandFunction = @convention(c) (UInt32, AnyObject?) -> Bool
-    private typealias MRMediaRemoteSetElapsedTimeFunction = @convention(c) (Double) -> Void
-
     private func sendMRCommand(_ command: UInt32) {
-        guard let handle = dlopen("/System/Library/PrivateFrameworks/MediaRemote.framework/MediaRemote", RTLD_NOW) else {
-            STLog.log("SptTerm: dlopen MediaRemote failed")
-            return
-        }
-        defer { dlclose(handle) }
-        guard let sym = dlsym(handle, "MRMediaRemoteSendCommand") else {
-            STLog.log("SptTerm: dlsym MRMediaRemoteSendCommand failed")
-            return
-        }
-        let sendCmd = unsafeBitCast(sym, to: MRMediaRemoteSendCommandFunction.self)
-        let result = sendCmd(command, nil)
-        STLog.log("SptTerm: MRMediaRemoteSendCommand(\(command)) = \(result ? 1 : 0)")
-
+        STMediaRemoteModeLadder.sendMRCommand(command)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
             self?.pollNowPlaying()
         }
+    }
+
+    func sendRawCommand(_ command: UInt32) {
+        STLog.log("SptTerm: raw MRMediaRemoteSendCommand(\(command)) dispatched via EXEC")
+        STMediaRemoteModeLadder.sendMRCommand(command)
     }
 
     func play() {
@@ -259,6 +253,9 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     }
 
     // MARK: - Seek Ladder
+
+    private typealias MRMediaRemoteSendCommandFunction = @convention(c) (UInt32, AnyObject?) -> Bool
+    private typealias MRMediaRemoteSetElapsedTimeFunction = @convention(c) (Double) -> Void
 
     private func currentNowPlayingElapsed() -> Double {
         guard let info = MPNowPlayingInfoCenter.default().nowPlayingInfo else {
@@ -389,16 +386,8 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
 
     // MARK: - Repeat Ladder
 
-    private struct RepeatStrategy {
-        let name: String
-        let cmd: UInt32
-        let optionKey: String?
-    }
-
     func setRepeatMode(_ mode: RepeatMode) {
-        var next = state
-        next.repeatMode = mode
-        publish(next)
+        let previousMode = state.repeatMode
 
         if repeatUnsupportedSession {
             STLog.log("SptTerm: repeat called but repeat is unsupported for this session (\(STLog.repeatNA))")
@@ -409,120 +398,27 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         repeatTask = Task { [weak self] in
             guard let self else { return }
 
-            let targetInt: Int
-            let targetType: MPRepeatType
-            switch mode {
-            case .off:
-                targetInt = 0
-                targetType = .off
-            case .one:
-                targetInt = 1
-                targetType = .one
-            case .all:
-                targetInt = 2
-                targetType = .all
-            }
+            let result = await STMediaRemoteModeLadder.executeRepeatLadder(target: mode)
+            guard !Task.isCancelled else { return }
 
-            // MediaRemote Repeat candidates:
-            // 1. AdvanceRepeatMode = 7 (nil options)
-            // 2. ChangeRepeatMode = 25 (from MediaRemoteSPI.h), option "kMRMediaRemoteOptionRepeatMode"
-            // 3. ChangeRepeatMode = 25, option "RepeatMode"
-            // 4. ChangeRepeatMode = 27 (alternative candidate), option "kMRMediaRemoteOptionRepeatMode"
-            // 5. ChangeRepeatMode = 14 (alternative candidate), option "kMRMediaRemoteOptionRepeatMode"
-            let strategies: [RepeatStrategy] = [
-                RepeatStrategy(name: "AdvanceRepeatMode(7)", cmd: 7, optionKey: nil),
-                RepeatStrategy(name: "ChangeRepeatMode(25,kMRMediaRemoteOptionRepeatMode)", cmd: 25, optionKey: "kMRMediaRemoteOptionRepeatMode"),
-                RepeatStrategy(name: "ChangeRepeatMode(25,RepeatMode)", cmd: 25, optionKey: "RepeatMode"),
-                RepeatStrategy(name: "ChangeRepeatMode(27,kMRMediaRemoteOptionRepeatMode)", cmd: 27, optionKey: "kMRMediaRemoteOptionRepeatMode"),
-                RepeatStrategy(name: "ChangeRepeatMode(14,kMRMediaRemoteOptionRepeatMode)", cmd: 14, optionKey: "kMRMediaRemoteOptionRepeatMode")
-            ]
-
-            var ordered = strategies
-            if let winning = self.tweakDefaults.string(forKey: self.winningRepeatStrategyKey),
-               let idx = ordered.firstIndex(where: { $0.name == winning }) {
-                let w = ordered.remove(at: idx)
-                ordered.insert(w, at: 0)
-            }
-
-            var verifiedSuccess = false
-            var anyCommandAccepted = false
-
-            for strat in ordered {
-                guard !Task.isCancelled else { return }
-
-                STLog.log("SptTerm: repeat trying candidate cmd=\(strat.cmd) name=\(strat.name) target=\(targetInt)(\(mode.rawValue))")
-
-                let commandCenter = MPRemoteCommandCenter.shared()
-                let repeatCmd = commandCenter.changeRepeatModeCommand
-                let typeBefore = repeatCmd.currentRepeatType
-                let isEnabledBefore = repeatCmd.isEnabled
-
-                guard let handle = dlopen("/System/Library/PrivateFrameworks/MediaRemote.framework/MediaRemote", RTLD_NOW) else {
-                    STLog.log("SptTerm: dlopen MediaRemote failed in repeat ladder")
-                    continue
-                }
-
-                var ret = false
-                if let sym = dlsym(handle, "MRMediaRemoteSendCommand") {
-                    let fn = unsafeBitCast(sym, to: MRMediaRemoteSendCommandFunction.self)
-                    if let key = strat.optionKey {
-                        let options = [key: NSNumber(value: targetInt)] as NSDictionary
-                        ret = fn(strat.cmd, options)
-                    } else {
-                        ret = fn(strat.cmd, nil)
-                    }
-                }
-                dlclose(handle)
-
-                if ret {
-                    anyCommandAccepted = true
-                }
-
-                // Wait 1.0 s to verify with MPRemoteCommandCenter
-                try? await Task.sleep(nanoseconds: 1_000_000_000)
-                guard !Task.isCancelled else { return }
-
-                let typeAfter = repeatCmd.currentRepeatType
-                let isEnabledAfter = repeatCmd.isEnabled
-
-                STLog.log("SptTerm: repeat candidate cmd=\(strat.cmd) ret=\(ret ? 1 : 0) before=\(typeBefore.rawValue) after=\(typeAfter.rawValue) isEnabled=\(isEnabledAfter) target=\(targetInt)")
-
-                // Verify result matches expected target
-                if typeAfter == targetType {
-                    verifiedSuccess = true
-                    self.tweakDefaults.set(strat.name, forKey: self.winningRepeatStrategyKey)
-                    STLog.log("SptTerm: repeat winning strategy verified: \(strat.name)")
-                    await MainActor.run {
-                        var upd = self.state
-                        upd.isRepeatSupported = true
-                        upd.isRepeatUnverified = false
-                        self.publish(upd)
-                    }
-                    break
-                }
-            }
-
-            if !verifiedSuccess {
-                if anyCommandAccepted {
-                    // Command was accepted by MediaRemote, but state cannot be verified via MPRemoteCommandCenter
-                    STLog.log("SptTerm: repeat state cannot be read back from MPRemoteCommandCenter (\(STLog.repeatUnverified))")
-                    await MainActor.run {
-                        var unverified = self.state
-                        unverified.isRepeatSupported = true
-                        unverified.isRepeatUnverified = true
-                        self.publish(unverified)
-                    }
-                } else {
-                    // Every attempt failed
+            await MainActor.run {
+                var upd = self.state
+                switch result {
+                case .verified(let verifiedMode):
+                    upd.repeatMode = verifiedMode
+                    upd.isRepeatSupported = true
+                    upd.isRepeatUnverified = false
+                case .unverified:
+                    upd.repeatMode = previousMode
+                    upd.isRepeatSupported = true
+                    upd.isRepeatUnverified = true
+                case .unsupported:
                     self.repeatUnsupportedSession = true
-                    STLog.log("SptTerm: repeat all strategies failed, marking repeat unsupported (\(STLog.repeatNA))")
-                    await MainActor.run {
-                        var unsupp = self.state
-                        unsupp.isRepeatSupported = false
-                        unsupp.isRepeatUnverified = false
-                        self.publish(unsupp)
-                    }
+                    upd.repeatMode = previousMode
+                    upd.isRepeatSupported = false
+                    upd.isRepeatUnverified = false
                 }
+                self.publish(upd)
             }
         }
     }
@@ -597,10 +493,47 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         publish(next)
     }
 
+    // MARK: - Shuffle Ladder
+
     func toggleShuffle() {
-        var next = state
-        next.isShuffled.toggle()
-        publish(next)
+        setShuffle(!state.isShuffled)
+    }
+
+    func setShuffle(_ enabled: Bool) {
+        let previousShuffled = state.isShuffled
+
+        if shuffleUnsupportedSession {
+            STLog.log("SptTerm: shuffle called but shuffle is unsupported for this session (\(STLog.shuffleNA))")
+            return
+        }
+
+        shuffleTask?.cancel()
+        shuffleTask = Task { [weak self] in
+            guard let self else { return }
+
+            let result = await STMediaRemoteModeLadder.executeShuffleLadder(target: enabled)
+            guard !Task.isCancelled else { return }
+
+            await MainActor.run {
+                var upd = self.state
+                switch result {
+                case .verified(let verifiedShuffled):
+                    upd.isShuffled = verifiedShuffled
+                    upd.isShuffleSupported = true
+                    upd.isShuffleUnverified = false
+                case .unverified:
+                    upd.isShuffled = previousShuffled
+                    upd.isShuffleSupported = true
+                    upd.isShuffleUnverified = true
+                case .unsupported:
+                    self.shuffleUnsupportedSession = true
+                    upd.isShuffled = previousShuffled
+                    upd.isShuffleSupported = false
+                    upd.isShuffleUnverified = false
+                }
+                self.publish(upd)
+            }
+        }
     }
 
     func setVolume(_ value: Double) {

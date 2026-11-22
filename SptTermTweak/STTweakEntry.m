@@ -4,6 +4,8 @@ __attribute__((used)) static const char * const kSptTermRequiredStrings[] = {
     "artwork nil for",
     "REPEAT N/A",
     "REPEAT (UNVERIFIED)",
+    "SHUFFLE N/A",
+    "SHUFFLE (UNVERIFIED)",
     "SEEK N/A",
     "log copy"
 };

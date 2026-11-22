@@ -83,6 +83,7 @@
 		63DF2675E0FE04BE7BB2B8E0 /* ThemePalettes+HandTuned.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CCC137ED8C70A2D10589DE /* ThemePalettes+HandTuned.swift */; };
 		64ECFA3ADEC69E91BCAE201F /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61926B1B359DFBA44796F9C2 /* TerminalTheme.swift */; };
 		6A456EBBB47D2BF29DE09176 /* MockCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B05B3DD781D660F9B414582 /* MockCatalog.swift */; };
+		6AB3BE90E2C485CCF4E3457C /* STMediaRemoteModeLadder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8CAAB22509F7EF72B170DCA /* STMediaRemoteModeLadder.swift */; };
 		6DEFB466EE5DDB44E9052A42 /* STInProcessArtworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB8E033852E8A5AD89B124CD /* STInProcessArtworkService.swift */; };
 		6EB6E32E9AA3B5E8DB44FCD3 /* ThemeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0EC1632BFC21A58121CAD3 /* ThemeCatalog.swift */; };
 		6FD0CEBBCD17348432CEA75B /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CF91DD2F2D95AC11106B31 /* SearchViewModel.swift */; };
@@ -291,6 +292,7 @@
 		E1F07243B22B472C1EB4FED7 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
 		E29855CB5F460E1FAA206D97 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		E402E710978E03C18ADD16F1 /* CollectionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionDetailView.swift; sourceTree = "<group>"; };
+		E8CAAB22509F7EF72B170DCA /* STMediaRemoteModeLadder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STMediaRemoteModeLadder.swift; sourceTree = "<group>"; };
 		EB3FDD189DC512C050672601 /* STSpotifyWebAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyWebAPI.swift; sourceTree = "<group>"; };
 		EBD73A9DD1A401D8507BC11C /* EQBand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EQBand.swift; sourceTree = "<group>"; };
 		EDF9944E55A4EDEA98BA68EC /* NowPlayingPanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingPanels.swift; sourceTree = "<group>"; };
@@ -472,6 +474,7 @@
 				D29306EAC99E354CC0664BCC /* STAudioTweaksService.swift */,
 				CB8E033852E8A5AD89B124CD /* STInProcessArtworkService.swift */,
 				C21DBD54251EFE14B2C495A8 /* STInProcessPlayerService.swift */,
+				E8CAAB22509F7EF72B170DCA /* STMediaRemoteModeLadder.swift */,
 				F886F719DDA3F01FE30D7F3E /* STSessionLibraryService.swift */,
 				6E4FDB793E436E378DCB0D9A /* STTweakEntry.m */,
 				384EB8DBD7EC432DC659ED92 /* STTweakWindowHost.swift */,
@@ -838,6 +841,7 @@
 				6DEFB466EE5DDB44E9052A42 /* STInProcessArtworkService.swift in Sources */,
 				0E09B83EBF72708B60A55ADB /* STInProcessPlayerService.swift in Sources */,
 				949C773F2EDE7879C63D24B0 /* STLog.swift in Sources */,
+				6AB3BE90E2C485CCF4E3457C /* STMediaRemoteModeLadder.swift in Sources */,
 				4B6EE8CAAADA93CE3FAD671F /* STRootGate.swift in Sources */,
 				9FFD7E7E8903252AA27572A1 /* STSessionLibraryService.swift in Sources */,
 				61E0F6E3364360A06C523DB8 /* STSpotifyDTOs.swift in Sources */,

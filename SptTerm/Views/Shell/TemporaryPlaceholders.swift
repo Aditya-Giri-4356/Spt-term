@@ -22,7 +22,7 @@ struct ExecPlaceholderView: View {
     @State private var inputCommand: String = ""
     @State private var consoleLines: [String] = [
         "spt.term in-process executor v1.0",
-        "commands: play, pause, next, prev, theme <name>, open <uri>"
+        "commands: play, pause, next, prev, repeat, shuffle, seek, open, theme, cmd, log"
     ]
 
     var body: some View {
@@ -208,6 +208,34 @@ struct ExecPlaceholderView: View {
                 consoleLines.append("> repeat: set to \(mode.rawValue.uppercased())")
             } else {
                 consoleLines.append("invalid repeat mode: \(modeStr) (use off, all, one)")
+            }
+        } else if lower == "shuffle" {
+            player.toggleShuffle()
+            consoleLines.append("> shuffle: toggled")
+        } else if lower == "shuffle on" {
+            player.setShuffle(true)
+            consoleLines.append("> shuffle: set to ON")
+        } else if lower == "shuffle off" {
+            player.setShuffle(false)
+            consoleLines.append("> shuffle: set to OFF")
+        } else if lower.hasPrefix("shuffle ") {
+            let arg = String(trimmed.dropFirst(8)).trimmingCharacters(in: .whitespaces).lowercased()
+            if arg == "on" || arg == "true" || arg == "1" {
+                player.setShuffle(true)
+                consoleLines.append("> shuffle: set to ON")
+            } else if arg == "off" || arg == "false" || arg == "0" {
+                player.setShuffle(false)
+                consoleLines.append("> shuffle: set to OFF")
+            } else {
+                consoleLines.append("invalid shuffle argument: \(arg) (use on, off)")
+            }
+        } else if lower.hasPrefix("cmd ") {
+            let cmdStr = String(trimmed.dropFirst(4)).trimmingCharacters(in: .whitespaces)
+            if let cmdNum = UInt32(cmdStr) {
+                player.sendRawCommand(cmdNum)
+                consoleLines.append("> cmd \(cmdNum): sent raw MediaRemote command (WARNING: unverified/experimental)")
+            } else {
+                consoleLines.append("invalid command number: \(cmdStr)")
             }
         } else if lower == "log" {
             let lines = STLog.shared.lastLines(40)

@@ -11,8 +11,8 @@ struct NowPlayingTransportPanel: View {
                 HStack(spacing: TermSpace.xs) {
                     transportButton(
                         glyph: "⤮",
-                        label: "SHUF",
-                        isActive: viewModel.state.isShuffled,
+                        label: viewModel.shuffleLabel,
+                        isActive: viewModel.state.isShuffled && viewModel.state.isShuffleSupported,
                         action: viewModel.toggleShuffle
                     )
                     transportButton(
