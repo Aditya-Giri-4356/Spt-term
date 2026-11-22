@@ -325,6 +325,7 @@ extension ServiceEnvironment {
         let auth = MockAuthService(isAuthorized: true)
         let audioTweaks = STAudioTweaksService()
         let artwork = STInProcessArtworkService.shared
+        STSpotifyLibraryScanner.registerCommands(into: STExecCommandRegistry.shared)
         return ServiceEnvironment(
             player: player,
             library: library,

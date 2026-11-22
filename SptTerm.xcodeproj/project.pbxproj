@@ -204,6 +204,7 @@
 		EDB18BFEF47380BA997113AE /* TerminalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC83705B6B27AA50FE253FAA /* TerminalType.swift */; };
 		EE40BA5C64F871B683ED2361 /* NowPlayingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7B92B66D90717717A43588 /* NowPlayingViewModel.swift */; };
 		F19094C2CF87BACDAD2A3EB1 /* BentoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E858DD4B1D871D21FC28DA /* BentoCard.swift */; };
+		F2377492CDD7FED5977415FC /* STSpotifyLibraryScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 095BBEBC631017B096B737FD /* STSpotifyLibraryScanner.swift */; };
 		F384C4C7E3A5AB67D6E3D730 /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = C62A5FD9AA5D6143B1329C50 /* Playlist.swift */; };
 		F61AEA2038F5C144130CF4AE /* SearchShellContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87FAD6D4FBF56EDE26C620E8 /* SearchShellContent.swift */; };
 		F695A649560321717FC179D3 /* TimeScrubber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044DDD90E1EC1B2E0F683E58 /* TimeScrubber.swift */; };
@@ -224,6 +225,7 @@
 		07AABAD5A262E002544C2B1D /* MockLyricsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockLyricsService.swift; sourceTree = "<group>"; };
 		088566ABCB05F82C2B4BFA4D /* TermColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TermColor.swift; sourceTree = "<group>"; };
 		08E2254DD4007AD1C7832B59 /* MockArtworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockArtworkService.swift; sourceTree = "<group>"; };
+		095BBEBC631017B096B737FD /* STSpotifyLibraryScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyLibraryScanner.swift; sourceTree = "<group>"; };
 		0ABA767495A7C2C057D3EC5A /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
 		10F57D7853040DD4154AC288 /* ASCIIProgressBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASCIIProgressBar.swift; sourceTree = "<group>"; };
 		14CF91DD2F2D95AC11106B31 /* SearchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchViewModel.swift; sourceTree = "<group>"; };
@@ -517,6 +519,7 @@
 				E8CAAB22509F7EF72B170DCA /* STMediaRemoteModeLadder.swift */,
 				F06BDA012DED1C50A91BCE7E /* STMRStateDump.swift */,
 				F886F719DDA3F01FE30D7F3E /* STSessionLibraryService.swift */,
+				095BBEBC631017B096B737FD /* STSpotifyLibraryScanner.swift */,
 				6281805D9CB9F4ABFA345680 /* STSpotifyUIElements.swift */,
 				8E187375E3F959BED46414B3 /* STSpotifyUIHook.swift */,
 				6E4FDB793E436E378DCB0D9A /* STTweakEntry.m */,
@@ -913,6 +916,7 @@
 				9FFD7E7E8903252AA27572A1 /* STSessionLibraryService.swift in Sources */,
 				D387508113E1282DEADD9EA7 /* STSleepTimer.swift in Sources */,
 				61E0F6E3364360A06C523DB8 /* STSpotifyDTOs.swift in Sources */,
+				F2377492CDD7FED5977415FC /* STSpotifyLibraryScanner.swift in Sources */,
 				3C56EBAFD3FB077C9C9BE430 /* STSpotifyUIElements.swift in Sources */,
 				5E977741E22D7B6CDC774C82 /* STSpotifyUIHook.swift in Sources */,
 				9081ABC71A9735B2D776615F /* STTweakEntry.m in Sources */,
