@@ -68,6 +68,7 @@
 		4611774B14B3C923DD8A9D07 /* STSpotifyConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC18EB24F6E69BD5262EC1E /* STSpotifyConfig.swift */; };
 		47064706D8EE4168F24A18F9 /* BlinkingCursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AB5296105B7CE7D53A7356A /* BlinkingCursor.swift */; };
 		47661ABD02843CFF83B9B785 /* ASCIIRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42BD735FAFDE120435103B1 /* ASCIIRule.swift */; };
+		47723FBBBDC20B7EFF461DE8 /* STRowActivator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 813FD7DAB8360F01F7BF6372 /* STRowActivator.swift */; };
 		4A60DA80CAB84B9E8D8A5893 /* STPlaylistCacheSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DA21230290F2E5007310980 /* STPlaylistCacheSection.swift */; };
 		4B202674563BFD0175FAF86C /* CollectionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E402E710978E03C18ADD16F1 /* CollectionDetailView.swift */; };
 		4B6EE8CAAADA93CE3FAD671F /* STRootGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2388B90E28AAED915368F551 /* STRootGate.swift */; };
@@ -286,6 +287,7 @@
 		715FCF3FC8A237A03AAAD290 /* STSleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSleepTimer.swift; sourceTree = "<group>"; };
 		7DA21230290F2E5007310980 /* STPlaylistCacheSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STPlaylistCacheSection.swift; sourceTree = "<group>"; };
 		7E7B92B66D90717717A43588 /* NowPlayingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingViewModel.swift; sourceTree = "<group>"; };
+		813FD7DAB8360F01F7BF6372 /* STRowActivator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STRowActivator.swift; sourceTree = "<group>"; };
 		87B0854EB91818DF6B786C54 /* STKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STKeychain.swift; sourceTree = "<group>"; };
 		87FAD6D4FBF56EDE26C620E8 /* SearchShellContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchShellContent.swift; sourceTree = "<group>"; };
 		8E187375E3F959BED46414B3 /* STSpotifyUIHook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyUIHook.swift; sourceTree = "<group>"; };
@@ -531,6 +533,7 @@
 				C749F9B4EB8B9FD55B025905 /* STMediaRemoteExplorationCommands.swift */,
 				E8CAAB22509F7EF72B170DCA /* STMediaRemoteModeLadder.swift */,
 				F06BDA012DED1C50A91BCE7E /* STMRStateDump.swift */,
+				813FD7DAB8360F01F7BF6372 /* STRowActivator.swift */,
 				F886F719DDA3F01FE30D7F3E /* STSessionLibraryService.swift */,
 				095BBEBC631017B096B737FD /* STSpotifyLibraryScanner.swift */,
 				6281805D9CB9F4ABFA345680 /* STSpotifyUIElements.swift */,
@@ -933,6 +936,7 @@
 				0601F81F60FA30D29E29A616 /* STPerfLogger.swift in Sources */,
 				4A60DA80CAB84B9E8D8A5893 /* STPlaylistCacheSection.swift in Sources */,
 				4B6EE8CAAADA93CE3FAD671F /* STRootGate.swift in Sources */,
+				47723FBBBDC20B7EFF461DE8 /* STRowActivator.swift in Sources */,
 				9FFD7E7E8903252AA27572A1 /* STSessionLibraryService.swift in Sources */,
 				D387508113E1282DEADD9EA7 /* STSleepTimer.swift in Sources */,
 				61E0F6E3364360A06C523DB8 /* STSpotifyDTOs.swift in Sources */,

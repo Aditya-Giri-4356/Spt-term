@@ -27,7 +27,7 @@ struct STScannedElement {
 @MainActor
 final class STSpotifyLibraryScanner {
 
-    /// Registers the `libscan` and `libclear` commands into the passed-in registry instance (not .shared).
+    /// Registers the `libscan`, `libclear`, and `libtap` commands into the passed-in registry instance (not .shared).
     static func registerCommands(into registry: STExecCommandRegistry) {
         registry.register(STExecCommand(
             name: "libscan",
@@ -44,6 +44,35 @@ final class STSpotifyLibraryScanner {
         ) { _, _, _ in
             STLibraryCache.shared.clear()
             return ["> libclear: cleared playlist cache (0 entries)"]
+        })
+
+        registry.register(STExecCommand(
+            name: "libtap",
+            usage: "libtap <substring>",
+            help: "activate single on-screen Library row matching substring"
+        ) { _, args, _ in
+            guard !args.isEmpty else { return ["usage: libtap <substring>"] }
+            let sub = args.joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let elements = scanOnScreenElements(logSummary: false)
+            let libraryRows = elements.filter { $0.ancestors.contains { $0.contains("YourLibrary") } }
+            let matches = libraryRows.filter {
+                ($0.parsedName ?? $0.label).lowercased().contains(sub) || $0.label.lowercased().contains(sub)
+            }
+            if matches.isEmpty {
+                return ["> libtap: no on-screen library rows matching '\(sub)'"]
+            }
+            if matches.count > 1 {
+                var lines = ["> libtap: multiple matches (\(matches.count)), ambiguous - did nothing:"]
+                for (idx, m) in matches.enumerated() {
+                    lines.append("  [\(idx + 1)] \(m.parsedName ?? m.label)")
+                }
+                return lines
+            }
+            let match = matches[0]
+            guard let view = match.view else { return ["> libtap: matched element view is nil"] }
+            let targetName = match.parsedName ?? match.label
+            let res = STRowActivator.activate(view: view, targetName: targetName)
+            return ["> libtap: \(res.success ? "activated" : "failed") '\(targetName)' via \(res.method ?? "none")"]
         })
     }
 
@@ -122,31 +151,20 @@ final class STSpotifyLibraryScanner {
                     curr = parent.superview
                 }
 
-                // Evaluate strict playlist classifier
-                let classification = classifyStrictPlaylistRow(
-                    label: trimmedLabel,
-                    ancestors: ancestors
-                )
-
                 var isCandidate = false
                 var parsedName: String? = nil
                 var matchedRule: String? = nil
 
-                switch classification {
+                switch classifyStrictPlaylistRow(label: trimmedLabel, ancestors: ancestors) {
                 case .kept(let name, let rule):
                     isCandidate = true
                     parsedName = name
                     matchedRule = rule
                     keptCount += 1
-                case .skippedNowPlaying:
-                    skippedNowPlaying += 1
-                case .skippedKind:
-                    skippedKind += 1
-                case .skippedNoParse:
-                    skippedNoParse += 1
-                case .skippedNotYourLibrary:
-                    // Not in YourLibrary hierarchy
-                    break
+                case .skippedNowPlaying: skippedNowPlaying += 1
+                case .skippedKind: skippedKind += 1
+                case .skippedNoParse: skippedNoParse += 1
+                case .skippedNotYourLibrary: break
                 }
 
                 elements.append(STScannedElement(
@@ -221,23 +239,13 @@ final class STSpotifyLibraryScanner {
 
     /// Scans on-screen elements, extracts playlist candidates, merges into cache v2, and returns all cached items.
     static func scanAndCachePlaylists() -> [STCachedPlaylist] {
-        let elements = scanOnScreenElements(logSummary: true)
-        let candidates = elements.filter { $0.isPlaylistCandidate }
-
-        var discovered: [STCachedPlaylist] = []
-        for c in candidates {
-            guard let name = c.parsedName else { continue }
-            discovered.append(STCachedPlaylist(name: name, lastLabel: c.label))
-        }
-
-        if !discovered.isEmpty {
-            STLibraryCache.shared.merge(playlists: discovered)
-        }
-
+        let candidates = scanOnScreenElements(logSummary: true).filter { $0.isPlaylistCandidate }
+        let discovered = candidates.compactMap { c in c.parsedName.map { STCachedPlaylist(name: $0, lastLabel: c.label) } }
+        if !discovered.isEmpty { STLibraryCache.shared.merge(playlists: discovered) }
         return STLibraryCache.shared.allPlaylists()
     }
 
-    /// Activates an on-screen element with matching name or label.
+    /// Activates an on-screen element with matching name or label using STRowActivator.
     static func activatePlaylist(nameOrLabel: String) -> (success: Bool, message: String) {
         let target = nameOrLabel.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         let elements = scanOnScreenElements(logSummary: false)
@@ -250,47 +258,21 @@ final class STSpotifyLibraryScanner {
             return (false, "NOT ON SCREEN - open Spotify Library")
         }
 
-        let beforeDesc = "[\(match.className)] name=\"\(match.parsedName ?? "")\" label=\"\(match.label)\""
-        STLog.log("SptTerm: activatePlaylist BEFORE: \(beforeDesc)")
-
-        var activated = targetView.accessibilityActivate()
-        if !activated, let control = targetView as? UIControl {
-            control.sendActions(for: .touchUpInside)
-            activated = true
-        }
-
-        let afterVal = targetView.accessibilityValue ?? ""
-        STLog.log("SptTerm: activatePlaylist AFTER: activated=\(activated ? 1 : 0) val=\"\(afterVal)\"")
-        return (true, "ACTIVATED")
+        let targetName = match.parsedName ?? match.label
+        let res = STRowActivator.activate(view: targetView, targetName: targetName)
+        return (res.success, res.success ? "ACTIVATED" : res.message)
     }
 
     /// Executes `libscan` command logic.
     static func runScanCommand() -> [String] {
         let elements = scanOnScreenElements(logSummary: true)
         let candidates = elements.filter { $0.isPlaylistCandidate }
+        let discovered = candidates.compactMap { c in c.parsedName.map { STCachedPlaylist(name: $0, lastLabel: c.label) } }
+        if !discovered.isEmpty { STLibraryCache.shared.merge(playlists: discovered) }
 
-        var discovered: [STCachedPlaylist] = []
-        for c in candidates {
-            guard let name = c.parsedName else { continue }
-            discovered.append(STCachedPlaylist(name: name, lastLabel: c.label))
-        }
-        if !discovered.isEmpty {
-            STLibraryCache.shared.merge(playlists: discovered)
-        }
-
-        var lines: [String] = [
-            "> libscan: scanned \(elements.count) element(s), \(candidates.count) playlist candidate(s):"
-        ]
-
-        if elements.isEmpty {
-            lines.append("  (no on-screen labelled elements found in non-overlay windows)")
-            return lines
-        }
-
-        for (idx, elem) in elements.enumerated() {
-            lines.append("  [\(idx + 1)] \(elem.summary)")
-        }
-
+        var lines = ["> libscan: scanned \(elements.count) element(s), \(candidates.count) playlist candidate(s):"]
+        if elements.isEmpty { lines.append("  (no on-screen labelled elements found in non-overlay windows)") }
+        for (idx, elem) in elements.enumerated() { lines.append("  [\(idx + 1)] \(elem.summary)") }
         return lines
     }
 }
