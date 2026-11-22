@@ -46,10 +46,10 @@
 | On-Screen Log Buffer (`STLog`) | **VERIFIED (user-reported)** | 200-line ring buffer with EXEC `log` and `log copy` commands |
 | Session Library (`STSessionLibraryService`) | **VERIFIED (user-reported)** | Observes nowPlayingInfo, dedupes by URI, newest first, cap 200, persisted in tweak suite |
 | Play-by-URI (`open <uri>`) | **VERIFIED (user-reported)** | Opens `spotify:track:...` via `player.openURI` with `"SptTerm:" NSLog` logging |
-| Progress Sync After Seek | **COMPILES ONLY (UNTESTED)** | Local anchor extrapolation, 2.5s ignore window, 2 consecutive full-ladder failures while playing before SEEK N/A, resync on transport |
+| Progress Sync After Seek | **VERIFIED (user-reported)** | Local anchor extrapolation, 2.5s ignore window, 2 consecutive full-ladder failures while playing before SEEK N/A, resync on transport |
 | Live Cover Cache & Retry | **COMPILES ONLY (UNTESTED)** | URI-keyed cache, placeholder on URI change with poll retry, 300x300 main-thread fetch with bounds fallback, single nil log per track |
-| Repeat Ladder & Verification | **COMPILES ONLY (UNTESTED)** | ChangeRepeatMode (25), AdvanceRepeatMode (7 at most once); MPRemoteCommandCenter 1.0s verify, REPEAT (UNVERIFIED) and REPEAT N/A handling, version-pinned persistence. NOTE: command numbers 7, 25 are UNVERIFIED MEMORY. |
-| Shuffle Ladder & Verification | **COMPILES ONLY (UNTESTED)** | ChangeShuffleMode (26), AdvanceShuffleMode (6 at most once); MPRemoteCommandCenter 1.0s verify, SHUFFLE (UNVERIFIED) and SHUFFLE N/A handling, version-pinned persistence. NOTE: command numbers 6, 26 are UNVERIFIED MEMORY. |
+| Repeat Ladder & Verification | **COMPILES ONLY. NOT WORKING ON DEVICE as of a196495 (labels UNVERIFIED, Spotify icons unchanged). A1 adds manual try/pin + uihook for diagnosis** | Single-send mode, stable strategy IDs (R1-R5, RH), user pin persistence. NOTE: Command numbers other than 0,1,4,5,24 are UNVERIFIED MEMORY; there is no Apple header. |
+| Shuffle Ladder & Verification | **COMPILES ONLY. NOT WORKING ON DEVICE as of a196495 (labels UNVERIFIED, Spotify icons unchanged). A1 adds manual try/pin + uihook for diagnosis** | Single-send mode, stable strategy IDs (S1-S5, SH), user pin persistence. NOTE: Command numbers other than 0,1,4,5,24 are UNVERIFIED MEMORY; there is no Apple header. |
 | Audio FX (`STAudioTweaksService`, EQ UI) | **MOCK/UI-ONLY** | Visible `"UI ONLY - does not process Spotify audio"` badge; state persisted to tweak suite |
 | Web API (Phase A) | **BLOCKED** | Blocked by Spotify Web API app-owner Premium requirement (HTTP 403 on `/me/playlists`) |
 | Phase B Milestone 2 In-Process Tweak Build | **COMPILES ONLY** | `SptTermTweak` (Debug + Release) and `SptTerm` schemes compile cleanly with zero errors |

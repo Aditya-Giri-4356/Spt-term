@@ -74,6 +74,8 @@ final class NowPlayingViewModel: ObservableObject {
     var repeatLabel: String {
         if !state.isRepeatSupported {
             return STLog.repeatNA
+        } else if state.isRepeatAssumed {
+            return "\(state.repeatMode.label) (ASSUMED)"
         } else if state.isRepeatUnverified {
             return STLog.repeatUnverified
         } else {
@@ -84,6 +86,8 @@ final class NowPlayingViewModel: ObservableObject {
     var shuffleLabel: String {
         if !state.isShuffleSupported {
             return STLog.shuffleNA
+        } else if state.isShuffleAssumed {
+            return state.isShuffled ? "ON (ASSUMED)" : "OFF (ASSUMED)"
         } else if state.isShuffleUnverified {
             return STLog.shuffleUnverified
         } else {

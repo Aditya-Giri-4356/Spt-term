@@ -64,6 +64,9 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         setupNotificationObservers()
         startPolling()
         pollNowPlaying()
+        DispatchQueue.main.async {
+            STMediaRemoteModeLadder.registerExplorationCommands()
+        }
     }
 
     deinit {
@@ -403,7 +406,7 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         repeatTask = Task { [weak self] in
             guard let self else { return }
 
-            let result = await STMediaRemoteModeLadder.executeRepeatLadder(target: mode)
+            let result = await STMediaRemoteModeLadder.executeRepeat(target: mode)
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
@@ -413,15 +416,23 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
                     upd.repeatMode = verifiedMode
                     upd.isRepeatSupported = true
                     upd.isRepeatUnverified = false
+                    upd.isRepeatAssumed = false
+                case .assumed(let assumedMode):
+                    upd.repeatMode = assumedMode
+                    upd.isRepeatSupported = true
+                    upd.isRepeatUnverified = false
+                    upd.isRepeatAssumed = true
                 case .unverified:
                     upd.repeatMode = previousMode
                     upd.isRepeatSupported = true
                     upd.isRepeatUnverified = true
+                    upd.isRepeatAssumed = false
                 case .unsupported:
                     self.repeatUnsupportedSession = true
                     upd.repeatMode = previousMode
                     upd.isRepeatSupported = false
                     upd.isRepeatUnverified = false
+                    upd.isRepeatAssumed = false
                 }
                 self.publish(upd)
             }
@@ -516,7 +527,7 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         shuffleTask = Task { [weak self] in
             guard let self else { return }
 
-            let result = await STMediaRemoteModeLadder.executeShuffleLadder(target: enabled)
+            let result = await STMediaRemoteModeLadder.executeShuffle(target: enabled)
             guard !Task.isCancelled else { return }
 
             await MainActor.run {
@@ -526,15 +537,23 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
                     upd.isShuffled = verifiedShuffled
                     upd.isShuffleSupported = true
                     upd.isShuffleUnverified = false
+                    upd.isShuffleAssumed = false
+                case .assumed(let assumedShuffled):
+                    upd.isShuffled = assumedShuffled
+                    upd.isShuffleSupported = true
+                    upd.isShuffleUnverified = false
+                    upd.isShuffleAssumed = true
                 case .unverified:
                     upd.isShuffled = previousShuffled
                     upd.isShuffleSupported = true
                     upd.isShuffleUnverified = true
+                    upd.isShuffleAssumed = false
                 case .unsupported:
                     self.shuffleUnsupportedSession = true
                     upd.isShuffled = previousShuffled
                     upd.isShuffleSupported = false
                     upd.isShuffleUnverified = false
+                    upd.isShuffleAssumed = false
                 }
                 self.publish(upd)
             }
