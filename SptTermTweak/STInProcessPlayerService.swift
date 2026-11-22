@@ -91,12 +91,14 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
 
     private func setupNotificationObservers() {
         NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.pollNowPlaying()
             }
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: AVAudioSession.interruptionNotification)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.pollNowPlaying()
             }
@@ -209,7 +211,13 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
         )
 
         if isOnlyProgressChange {
-            if Int(next.progress) != Int(state.progress) || abs(next.progress - state.progress) >= 1.0 {
+            let nextP = next.progress
+            let stateP = state.progress
+            if nextP.isFinite && stateP.isFinite {
+                if floor(nextP) != floor(stateP) || abs(nextP - stateP) >= 1.0 {
+                    publish(next)
+                }
+            } else if nextP != stateP {
                 publish(next)
             }
         } else if next != state {
@@ -218,8 +226,14 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     }
 
     private func publish(_ state: PlayerState) {
-        STPerfLogger.shared.measureBlock(label: "player-state publish") {
-            subject.send(state)
+        if Thread.isMainThread {
+            STPerfLogger.shared.measureBlock(label: "player-state publish") {
+                subject.send(state)
+            }
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.publish(state)
+            }
         }
     }
 
