@@ -367,4 +367,10 @@ final class STSessionLibraryService: LibraryServiceProtocol {
     func clearOpenedPlaylistTracks() {
         STOpenedPlaylistTracks.shared.clear()
     }
+
+    // MARK: - Multi-step Batch Scanning
+
+    func scanAll() async -> (steps: Int, namesTotal: Int) {
+        return await STLibraryBatchScanner.runScanAll()
+    }
 }

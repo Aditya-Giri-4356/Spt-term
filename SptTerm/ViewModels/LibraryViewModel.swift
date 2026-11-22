@@ -50,6 +50,15 @@ final class LibraryViewModel: ObservableObject {
         isScanning = false
     }
 
+    func scanAll() async {
+        isScanning = true
+        let res = await library.scanAll()
+        cachedPlaylists = library.cachedPlaylists()
+        openedPlaylistTracks = library.openedPlaylistTracks()
+        playlistStatus = "SCAN ALL: \(res.steps) steps, \(res.namesTotal) total names"
+        isScanning = false
+    }
+
     func selectPlaylist(_ playlist: STCachedPlaylist) {
         let res = library.activatePlaylist(label: playlist.label)
         playlistStatus = res.success ? nil : res.message

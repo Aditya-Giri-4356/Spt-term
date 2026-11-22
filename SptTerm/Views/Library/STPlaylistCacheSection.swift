@@ -34,7 +34,23 @@ struct STPlaylistCacheSection: View {
                     await viewModel.scanPlaylists()
                 }
             } label: {
-                Text(viewModel.isScanning ? "[SCANNING...]" : "[SCAN]")
+                Text(viewModel.isScanning ? "[...]" : "[SCAN]")
+                    .termType(TermType.labelSM, color: theme.palette.onAccent)
+                    .padding(.horizontal, TermSpace.sm)
+                    .padding(.vertical, 5)
+                    .background(theme.palette.accent)
+                    .overlay(Rectangle().strokeBorder(theme.palette.accent, lineWidth: 1))
+            }
+            .buttonStyle(TermPressStyle())
+            .disabled(viewModel.isScanning)
+
+            Button {
+                TermHaptic.tap()
+                Task {
+                    await viewModel.scanAll()
+                }
+            } label: {
+                Text(viewModel.isScanning ? "[...]" : "[SCAN ALL]")
                     .termType(TermType.labelSM, color: theme.palette.onAccent)
                     .padding(.horizontal, TermSpace.sm)
                     .padding(.vertical, 5)

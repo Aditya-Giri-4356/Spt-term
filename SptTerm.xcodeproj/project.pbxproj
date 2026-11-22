@@ -207,6 +207,7 @@
 		E405A61618750B21E047A6D8 /* ASCIIPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89766216FBA6286A5E74F6B /* ASCIIPanel.swift */; };
 		E54F362C4C78046DAA9C3632 /* TerminalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC83705B6B27AA50FE253FAA /* TerminalType.swift */; };
 		E813C4803D88DA67C833BCCA /* ASCIIArtworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A520CBA75C770B5AA69ABFA /* ASCIIArtworkView.swift */; };
+		EB64AC07D72052AE1A9C6ABF /* STLibraryBatchScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AC41CC57B95BAD512F87BA /* STLibraryBatchScanner.swift */; };
 		EC21AB89D9086528BCAA37EC /* NowPlayingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B779E9EB75DC049B0729ECF /* NowPlayingView.swift */; };
 		ED151C704247F72AE5F72043 /* PlaylistDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693EBA4D75BAD2BB2886253F /* PlaylistDetailViewModel.swift */; };
 		EDB18BFEF47380BA997113AE /* TerminalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC83705B6B27AA50FE253FAA /* TerminalType.swift */; };
@@ -333,6 +334,7 @@
 		C96C1C312ACF3D6FFD0F67D3 /* AudioEffectsServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEffectsServiceProtocol.swift; sourceTree = "<group>"; };
 		CB8E033852E8A5AD89B124CD /* STInProcessArtworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STInProcessArtworkService.swift; sourceTree = "<group>"; };
 		CD524551C8D962EB3A4CDD23 /* ScanlineOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanlineOverlay.swift; sourceTree = "<group>"; };
+		D0AC41CC57B95BAD512F87BA /* STLibraryBatchScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STLibraryBatchScanner.swift; sourceTree = "<group>"; };
 		D26CCE8F5AF1FDB61918AB10 /* STAuthServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STAuthServiceProtocol.swift; sourceTree = "<group>"; };
 		D29306EAC99E354CC0664BCC /* STAudioTweaksService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STAudioTweaksService.swift; sourceTree = "<group>"; };
 		D388FDC1490A64CD4C654911 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
@@ -533,6 +535,7 @@
 				D29306EAC99E354CC0664BCC /* STAudioTweaksService.swift */,
 				CB8E033852E8A5AD89B124CD /* STInProcessArtworkService.swift */,
 				C21DBD54251EFE14B2C495A8 /* STInProcessPlayerService.swift */,
+				D0AC41CC57B95BAD512F87BA /* STLibraryBatchScanner.swift */,
 				55940AE464BF3DD00CB21FA6 /* STLibraryCache.swift */,
 				921FA2D1EE64489071D50340 /* STLibraryLabelParser.swift */,
 				C749F9B4EB8B9FD55B025905 /* STMediaRemoteExplorationCommands.swift */,
@@ -932,6 +935,7 @@
 				6DEFB466EE5DDB44E9052A42 /* STInProcessArtworkService.swift in Sources */,
 				0E09B83EBF72708B60A55ADB /* STInProcessPlayerService.swift in Sources */,
 				9EEB73136C875822F7C51B3C /* STLRCParser.swift in Sources */,
+				EB64AC07D72052AE1A9C6ABF /* STLibraryBatchScanner.swift in Sources */,
 				89F01720EEA3BE4EDB8E0B75 /* STLibraryCache.swift in Sources */,
 				A60B3F3CDC1CB6FDA2761438 /* STLibraryLabelParser.swift in Sources */,
 				949C773F2EDE7879C63D24B0 /* STLog.swift in Sources */,

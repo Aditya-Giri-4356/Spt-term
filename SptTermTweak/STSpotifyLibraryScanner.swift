@@ -29,7 +29,11 @@ final class STSpotifyLibraryScanner {
 
     /// Registers the library and track EXEC commands into the passed-in registry instance (not .shared).
     static func registerCommands(into registry: STExecCommandRegistry) {
-        registry.register(STExecCommand(name: "libscan", usage: "libscan", help: "dump on-screen elements, classify playlists & tracks") { _, _, _ in
+        registry.register(STExecCommand(name: "libscan", usage: "libscan [all]", help: "dump on-screen elements or auto-scroll (all)") { _, args, _ in
+            if args.first?.lowercased() == "all" {
+                STLibraryBatchScanner.startScanAll()
+                return ["> libscan all: started auto-scroll scan (up to 40 steps, check `log`)"]
+            }
             return runScanCommand()
         })
 

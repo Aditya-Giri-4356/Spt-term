@@ -28,6 +28,9 @@ protocol LibraryServiceProtocol: AnyObject {
     @MainActor
     func activateTrack(label: String) -> (success: Bool, message: String)
     func clearOpenedPlaylistTracks()
+
+    // MARK: - Multi-step Batch Scanning
+    func scanAll() async -> (steps: Int, namesTotal: Int)
 }
 
 extension LibraryServiceProtocol {
@@ -45,4 +48,6 @@ extension LibraryServiceProtocol {
         (false, "NOT ON SCREEN - scroll Spotify to this track")
     }
     func clearOpenedPlaylistTracks() {}
+
+    func scanAll() async -> (steps: Int, namesTotal: Int) { (0, 0) }
 }
