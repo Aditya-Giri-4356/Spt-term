@@ -43,6 +43,24 @@ public final class STLibraryLabelParser {
         return nil
     }
 
+    /// Pure function evaluating whether an element matches opened-playlist track row requirements:
+    /// - Ancestor contains "ListUXPlatform" or "PlaylistImpl"
+    /// - No ancestor contains "NowPlaying" or "YourLibrary"
+    /// - Label length between 2 and 200 characters
+    /// - Frame width at least 200pt
+    public static func isOpenedPlaylistTrackRow(
+        label: String,
+        frame: CGRect,
+        ancestors: [String]
+    ) -> Bool {
+        guard label.count >= 2 && label.count <= 200 else { return false }
+        guard frame.width >= 200.0 else { return false }
+        if ancestors.contains(where: { $0.contains("NowPlaying") || $0.contains("YourLibrary") }) {
+            return false
+        }
+        return ancestors.contains(where: { $0.contains("ListUXPlatform") || $0.contains("PlaylistImpl") })
+    }
+
     private static func extractName(beforeMarker kind: String, in text: String) -> String? {
         let marker = ". " + kind
         var searchStart = text.startIndex

@@ -169,6 +169,7 @@ struct LibraryView: View {
     private var listView: some View {
         LazyVStack(spacing: TermSpace.sm) {
             if filter == .all || filter == .playlists {
+                STOpenedPlaylistTracksSection(viewModel: viewModel)
                 STPlaylistCacheSection(viewModel: viewModel)
                 if !viewModel.playlists.isEmpty {
                     groupContainer(id: "playlists", title: "/Playlists", count: viewModel.playlists.count) {

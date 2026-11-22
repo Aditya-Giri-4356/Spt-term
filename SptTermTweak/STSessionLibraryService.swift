@@ -352,4 +352,19 @@ final class STSessionLibraryService: LibraryServiceProtocol {
     func clearPlaylistCache() {
         STLibraryCache.shared.clear()
     }
+
+    // MARK: - On-screen Opened-Playlist Tracks
+
+    func openedPlaylistTracks() -> [String] {
+        return STOpenedPlaylistTracks.shared.allTracks()
+    }
+
+    @MainActor
+    func activateTrack(label: String) -> (success: Bool, message: String) {
+        return STSpotifyLibraryScanner.activateTrack(label: label)
+    }
+
+    func clearOpenedPlaylistTracks() {
+        STOpenedPlaylistTracks.shared.clear()
+    }
 }

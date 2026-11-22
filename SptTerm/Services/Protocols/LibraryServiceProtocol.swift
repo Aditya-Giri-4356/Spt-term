@@ -22,6 +22,12 @@ protocol LibraryServiceProtocol: AnyObject {
     @MainActor
     func activatePlaylist(label: String) -> (success: Bool, message: String)
     func clearPlaylistCache()
+
+    // MARK: - On-screen Opened-Playlist Tracks
+    func openedPlaylistTracks() -> [String]
+    @MainActor
+    func activateTrack(label: String) -> (success: Bool, message: String)
+    func clearOpenedPlaylistTracks()
 }
 
 extension LibraryServiceProtocol {
@@ -32,4 +38,11 @@ extension LibraryServiceProtocol {
         (false, "NOT ON SCREEN - open Spotify Library")
     }
     func clearPlaylistCache() {}
+
+    func openedPlaylistTracks() -> [String] { [] }
+    @MainActor
+    func activateTrack(label: String) -> (success: Bool, message: String) {
+        (false, "NOT ON SCREEN - scroll Spotify to this track")
+    }
+    func clearOpenedPlaylistTracks() {}
 }
