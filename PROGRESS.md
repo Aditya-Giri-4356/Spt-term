@@ -48,8 +48,8 @@
 | Play-by-URI (`open <uri>`) | **VERIFIED (user-reported)** | Opens `spotify:track:...` via `player.openURI` with `"SptTerm:" NSLog` logging |
 | Progress Sync After Seek | **VERIFIED (user-reported)** | Local anchor extrapolation, 2.5s ignore window, 2 consecutive full-ladder failures while playing before SEEK N/A, resync on transport |
 | Live Cover Cache & Retry | **COMPILES ONLY (UNTESTED)** | URI-keyed cache, placeholder on URI change with poll retry, 300x300 main-thread fetch with bounds fallback, single nil log per track |
-| Repeat Ladder & Verification | **COMPILES ONLY. NOT WORKING ON DEVICE as of a196495 (labels UNVERIFIED, Spotify icons unchanged). A1 adds manual try/pin + uihook for diagnosis** | Single-send mode, stable strategy IDs (R1-R5, RH), user pin persistence. NOTE: Command numbers other than 0,1,4,5,24 are UNVERIFIED MEMORY; there is no Apple header. |
-| Shuffle Ladder & Verification | **COMPILES ONLY. NOT WORKING ON DEVICE as of a196495 (labels UNVERIFIED, Spotify icons unchanged). A1 adds manual try/pin + uihook for diagnosis** | Single-send mode, stable strategy IDs (S1-S5, SH), user pin persistence. NOTE: Command numbers other than 0,1,4,5,24 are UNVERIFIED MEMORY; there is no Apple header. |
+| Repeat Ladder & Verification | **COMPILES ONLY via UI hook, device result pending; MR strategies = not working on device** | UI hook route by default, frame deduplication, tolerant negative-first parser, manual try/pin preserved |
+| Shuffle Ladder & Verification | **COMPILES ONLY via UI hook, device result pending; MR strategies = not working on device** | UI hook route by default, second-mode menu diffing & standard shuffle activation, manual try/pin preserved |
 | Audio FX (`STAudioTweaksService`, EQ UI) | **MOCK/UI-ONLY** | Visible `"UI ONLY - does not process Spotify audio"` badge; state persisted to tweak suite |
 | Web API (Phase A) | **BLOCKED** | Blocked by Spotify Web API app-owner Premium requirement (HTTP 403 on `/me/playlists`) |
 | Phase B Milestone 2 In-Process Tweak Build | **COMPILES ONLY** | `SptTermTweak` (Debug + Release) and `SptTerm` schemes compile cleanly with zero errors |

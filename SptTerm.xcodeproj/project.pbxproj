@@ -51,6 +51,7 @@
 		38D369463DDB86363A1C6EB5 /* ToggleRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00F5E443AA18067C54B703A9 /* ToggleRow.swift */; };
 		3AFFCD8717C1C673CC905185 /* CollectionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E402E710978E03C18ADD16F1 /* CollectionDetailView.swift */; };
 		3BE739A2F318CBAA84C19850 /* ThemePalettes+HandTuned.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CCC137ED8C70A2D10589DE /* ThemePalettes+HandTuned.swift */; };
+		3C56EBAFD3FB077C9C9BE430 /* STSpotifyUIElements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6281805D9CB9F4ABFA345680 /* STSpotifyUIElements.swift */; };
 		3D33F9D84D6F1580E98E4B7F /* ArtworkProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46BD00244A8CCEAD4472A271 /* ArtworkProviding.swift */; };
 		3E0D2CB03C00A3C4CF1866D5 /* ShellMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3592AE0EB4C00174571527 /* ShellMetrics.swift */; };
 		3F56AEBDE9474DCD97756705 /* SearchShellContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87FAD6D4FBF56EDE26C620E8 /* SearchShellContent.swift */; };
@@ -251,6 +252,7 @@
 		5EC18EB24F6E69BD5262EC1E /* STSpotifyConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyConfig.swift; sourceTree = "<group>"; };
 		61926B1B359DFBA44796F9C2 /* TerminalTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTheme.swift; sourceTree = "<group>"; };
 		62284C3E99590634F664014A /* STWebLibraryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STWebLibraryService.swift; sourceTree = "<group>"; };
+		6281805D9CB9F4ABFA345680 /* STSpotifyUIElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyUIElements.swift; sourceTree = "<group>"; };
 		65194DCCD7574A5B17EC1802 /* PreviewSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewSupport.swift; sourceTree = "<group>"; };
 		693EBA4D75BAD2BB2886253F /* PlaylistDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailViewModel.swift; sourceTree = "<group>"; };
 		6E4FDB793E436E378DCB0D9A /* STTweakEntry.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = STTweakEntry.m; sourceTree = "<group>"; };
@@ -494,6 +496,7 @@
 				E8CAAB22509F7EF72B170DCA /* STMediaRemoteModeLadder.swift */,
 				F06BDA012DED1C50A91BCE7E /* STMRStateDump.swift */,
 				F886F719DDA3F01FE30D7F3E /* STSessionLibraryService.swift */,
+				6281805D9CB9F4ABFA345680 /* STSpotifyUIElements.swift */,
 				8E187375E3F959BED46414B3 /* STSpotifyUIHook.swift */,
 				6E4FDB793E436E378DCB0D9A /* STTweakEntry.m */,
 				384EB8DBD7EC432DC659ED92 /* STTweakWindowHost.swift */,
@@ -874,6 +877,7 @@
 				9FFD7E7E8903252AA27572A1 /* STSessionLibraryService.swift in Sources */,
 				D387508113E1282DEADD9EA7 /* STSleepTimer.swift in Sources */,
 				61E0F6E3364360A06C523DB8 /* STSpotifyDTOs.swift in Sources */,
+				3C56EBAFD3FB077C9C9BE430 /* STSpotifyUIElements.swift in Sources */,
 				5E977741E22D7B6CDC774C82 /* STSpotifyUIHook.swift in Sources */,
 				9081ABC71A9735B2D776615F /* STTweakEntry.m in Sources */,
 				87BC29EC0B38C65DA769C2B7 /* STTweakWindowHost.swift in Sources */,

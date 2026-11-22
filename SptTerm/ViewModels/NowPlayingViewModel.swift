@@ -72,6 +72,9 @@ final class NowPlayingViewModel: ObservableObject {
     }
 
     var repeatLabel: String {
+        if let override = state.repeatOverrideLabel {
+            return override
+        }
         if !state.isRepeatSupported {
             return STLog.repeatNA
         } else if state.isRepeatAssumed {
@@ -84,6 +87,9 @@ final class NowPlayingViewModel: ObservableObject {
     }
 
     var shuffleLabel: String {
+        if let override = state.shuffleOverrideLabel {
+            return override
+        }
         if !state.isShuffleSupported {
             return STLog.shuffleNA
         } else if state.isShuffleAssumed {

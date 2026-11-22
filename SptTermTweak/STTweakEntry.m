@@ -4,8 +4,10 @@ __attribute__((used)) static const char * const kSptTermRequiredStrings[] = {
     "artwork nil for",
     "REPEAT N/A",
     "REPEAT (UNVERIFIED)",
+    "REPEAT N/A (open Spotify player)",
     "SHUFFLE N/A",
     "SHUFFLE (UNVERIFIED)",
+    "SHUFFLE N/A (open Spotify player)",
     "SEEK N/A",
     "log copy",
     "waiting for read-back",
@@ -13,12 +15,13 @@ __attribute__((used)) static const char * const kSptTermRequiredStrings[] = {
     "uihook",
     "strategies",
     "no candidates",
+    "shuffle menu ambiguous",
     "hitch",
     "lyrics: off"
 };
 
 __attribute__((constructor))
-static void SptTermTweakInit(void) {
+void SptTermTweakInit(void) {
     NSLog(@"[SptTermTweak] Injected dylib constructor loaded");
 
     void (^performInstall)(void) = ^{

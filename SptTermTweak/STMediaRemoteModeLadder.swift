@@ -5,6 +5,7 @@ enum STRepeatLadderResult {
     case verified(RepeatMode)
     case assumed(RepeatMode)
     case unverified(RepeatMode)
+    case noCandidates
     case unsupported
 }
 
@@ -12,6 +13,7 @@ enum STShuffleLadderResult {
     case verified(Bool)
     case assumed(Bool)
     case unverified(Bool)
+    case noCandidates
     case unsupported
 }
 
@@ -120,7 +122,7 @@ final class STMediaRemoteModeLadder {
     // MARK: - Single-Send Repeat
 
     static func executeRepeat(target: RepeatMode, explicitID: String? = nil) async -> STRepeatLadderResult {
-        let stratID = (explicitID ?? pinnedRepeatStrategy() ?? "R1").uppercased()
+        let stratID = (explicitID ?? pinnedRepeatStrategy() ?? "RH").uppercased()
         guard let strat = repeatStrategies.first(where: { $0.id == stratID }) else {
             return .unsupported
         }
@@ -129,13 +131,17 @@ final class STMediaRemoteModeLadder {
 
         if strat.isUIHook {
             let res = await STSpotifyUIHook.press(type: "repeat")
-            if let parsed = STModeMappings.parseRepeatText(res.after) {
+            guard res.candidateFound else {
+                return .noCandidates
+            }
+            if let parsed = STModeMappings.parseRepeatCandidate(label: res.afterLabel, value: res.afterValue) {
                 consecutiveRepeatFailures = 0
                 return .verified(parsed)
             }
             if isPinned {
                 return .assumed(target)
             }
+            STLog.log("SptTerm: uihook repeat unmapped read-back: label=\"\(res.afterLabel)\" val=\"\(res.afterValue)\" before=\"\(res.beforeDesc)\"")
             return .unverified(target)
         }
 
@@ -178,7 +184,7 @@ final class STMediaRemoteModeLadder {
     // MARK: - Single-Send Shuffle
 
     static func executeShuffle(target: Bool, explicitID: String? = nil) async -> STShuffleLadderResult {
-        let stratID = (explicitID ?? pinnedShuffleStrategy() ?? "S1").uppercased()
+        let stratID = (explicitID ?? pinnedShuffleStrategy() ?? "SH").uppercased()
         guard let strat = shuffleStrategies.first(where: { $0.id == stratID }) else {
             return .unsupported
         }
@@ -187,13 +193,20 @@ final class STMediaRemoteModeLadder {
 
         if strat.isUIHook {
             let res = await STSpotifyUIHook.press(type: "shuffle")
-            if let parsed = STModeMappings.parseShuffleText(res.after) {
+            guard res.candidateFound else {
+                return .noCandidates
+            }
+            if let parsed = STModeMappings.parseShuffleCandidate(label: res.afterLabel, value: res.afterValue) {
                 consecutiveShuffleFailures = 0
-                return .verified(parsed)
+                if parsed.isSmart {
+                    STLog.log("SptTerm: uihook shuffle smart=true")
+                }
+                return .verified(parsed.isShuffled)
             }
             if isPinned {
                 return .assumed(target)
             }
+            STLog.log("SptTerm: uihook shuffle unmapped read-back: label=\"\(res.afterLabel)\" val=\"\(res.afterValue)\" before=\"\(res.beforeDesc)\"")
             return .unverified(target)
         }
 

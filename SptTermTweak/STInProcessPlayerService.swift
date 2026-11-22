@@ -422,22 +422,32 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
                     upd.isRepeatSupported = true
                     upd.isRepeatUnverified = false
                     upd.isRepeatAssumed = false
+                    upd.repeatOverrideLabel = nil
                 case .assumed(let assumedMode):
                     upd.repeatMode = assumedMode
                     upd.isRepeatSupported = true
                     upd.isRepeatUnverified = false
                     upd.isRepeatAssumed = true
+                    upd.repeatOverrideLabel = nil
                 case .unverified:
                     upd.repeatMode = previousMode
                     upd.isRepeatSupported = true
                     upd.isRepeatUnverified = true
                     upd.isRepeatAssumed = false
+                    upd.repeatOverrideLabel = nil
+                case .noCandidates:
+                    upd.repeatMode = previousMode
+                    upd.isRepeatSupported = true
+                    upd.isRepeatUnverified = false
+                    upd.isRepeatAssumed = false
+                    upd.repeatOverrideLabel = "REPEAT N/A (open Spotify player)"
                 case .unsupported:
                     self.repeatUnsupportedSession = true
                     upd.repeatMode = previousMode
                     upd.isRepeatSupported = false
                     upd.isRepeatUnverified = false
                     upd.isRepeatAssumed = false
+                    upd.repeatOverrideLabel = nil
                 }
                 self.publish(upd)
             }
@@ -543,22 +553,32 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
                     upd.isShuffleSupported = true
                     upd.isShuffleUnverified = false
                     upd.isShuffleAssumed = false
+                    upd.shuffleOverrideLabel = nil
                 case .assumed(let assumedShuffled):
                     upd.isShuffled = assumedShuffled
                     upd.isShuffleSupported = true
                     upd.isShuffleUnverified = false
                     upd.isShuffleAssumed = true
+                    upd.shuffleOverrideLabel = nil
                 case .unverified:
                     upd.isShuffled = previousShuffled
                     upd.isShuffleSupported = true
                     upd.isShuffleUnverified = true
                     upd.isShuffleAssumed = false
+                    upd.shuffleOverrideLabel = nil
+                case .noCandidates:
+                    upd.isShuffled = previousShuffled
+                    upd.isShuffleSupported = true
+                    upd.isShuffleUnverified = false
+                    upd.isShuffleAssumed = false
+                    upd.shuffleOverrideLabel = "SHUFFLE N/A (open Spotify player)"
                 case .unsupported:
                     self.shuffleUnsupportedSession = true
                     upd.isShuffled = previousShuffled
                     upd.isShuffleSupported = false
                     upd.isShuffleUnverified = false
                     upd.isShuffleAssumed = false
+                    upd.shuffleOverrideLabel = nil
                 }
                 self.publish(upd)
             }

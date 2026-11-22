@@ -28,9 +28,11 @@ struct PlayerState: Equatable {
     var isRepeatSupported: Bool = true
     var isRepeatUnverified: Bool = false
     var isRepeatAssumed: Bool = false
+    var repeatOverrideLabel: String? = nil
     var isShuffleSupported: Bool = true
     var isShuffleUnverified: Bool = false
     var isShuffleAssumed: Bool = false
+    var shuffleOverrideLabel: String? = nil
 
     var isCurrentTrackLiked: Bool {
         guard let currentTrack else { return false }
@@ -64,8 +66,10 @@ struct PlayerState: Equatable {
         isRepeatSupported: true,
         isRepeatUnverified: false,
         isRepeatAssumed: false,
+        repeatOverrideLabel: nil,
         isShuffleSupported: true,
         isShuffleUnverified: false,
-        isShuffleAssumed: false
+        isShuffleAssumed: false,
+        shuffleOverrideLabel: nil
     )
 }

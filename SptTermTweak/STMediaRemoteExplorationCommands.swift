@@ -103,9 +103,9 @@ final class STMediaRemoteExplorationCommands {
             return STMRStateDump.dumpState()
         })
 
-        reg.register(STExecCommand(name: "uihook", usage: "uihook <scan|press repeat|press shuffle>", help: "scan or press Spotify on-screen controls") { _, args, _ in
+        reg.register(STExecCommand(name: "uihook", usage: "uihook <scan|press repeat|press shuffle|elements|tap <text>>", help: "scan or press Spotify on-screen controls") { _, args, _ in
             guard !args.isEmpty else {
-                return ["usage: uihook scan | uihook press <repeat|shuffle>"]
+                return ["usage: uihook scan | uihook press <repeat|shuffle> | uihook elements | uihook tap <text>"]
             }
             let sub = args[0].lowercased()
             if sub == "scan" {
@@ -128,8 +128,24 @@ final class STMediaRemoteExplorationCommands {
                     _ = await STSpotifyUIHook.press(type: target)
                 }
                 return ["> uihook: pressing \(target) button... (check `log`)"]
+            } else if sub == "elements" {
+                let elements = STSpotifyUIElements.dumpOnScreenElements(limit: 150)
+                if elements.isEmpty {
+                    return ["> uihook elements: no on-screen elements with labels found"]
+                }
+                var lines = ["> uihook elements (\(elements.count) on-screen):"]
+                for (idx, e) in elements.enumerated() {
+                    let desc = "[\(idx + 1)] [\(e.className)] label=\"\(e.label)\" id=\"\(e.identifier)\" val=\"\(e.value)\" frame=\(NSCoder.string(for: e.frame))"
+                    lines.append("  \(desc)")
+                    STLog.log("SptTerm: uihook elem \(desc)")
+                }
+                return lines
+            } else if sub == "tap" {
+                guard args.count > 1 else { return ["usage: uihook tap <substring>"] }
+                let query = args.dropFirst().joined(separator: " ")
+                return STSpotifyUIElements.tapElement(matching: query)
             } else {
-                return ["usage: uihook scan | uihook press <repeat|shuffle>"]
+                return ["usage: uihook scan | uihook press <repeat|shuffle> | uihook elements | uihook tap <text>"]
             }
         })
     }

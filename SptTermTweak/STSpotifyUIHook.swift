@@ -1,5 +1,15 @@
 import UIKit
 
+/// Result of a UI hook press operation.
+struct UIHookPressResult {
+    let candidateFound: Bool
+    let activated: Bool
+    let beforeDesc: String
+    let afterLabel: String
+    let afterValue: String
+    let isSelected: Bool
+}
+
 /// Inspects and interacts with Spotify's native on-screen player controls.
 /// Runs exclusively on the main thread and touches Spotify views only to read
 /// accessibility properties or perform a single activated press.
@@ -37,7 +47,6 @@ final class STSpotifyUIHook {
         for scene in UIApplication.shared.connectedScenes {
             guard let windowScene = scene as? UIWindowScene else { continue }
             for window in windowScene.windows {
-                // Exclude SptTerm tweak window
                 if window is STTweakWindow || window.windowLevel > UIWindow.Level.alert {
                     continue
                 }
@@ -95,28 +104,97 @@ final class STSpotifyUIHook {
         }
     }
 
-    /// One-shot press of Spotify's repeat or shuffle button.
-    /// Chooses the best visible on-screen candidate, triggers once, logs before and after 0.6s.
-    static func press(type: String) async -> (success: Bool, before: String, after: String, candidate: Candidate?) {
-        let targetType = type.lowercased()
-        let query = targetType.contains("repeat") ? "repeat" : "shuffle"
+    /// Deduplicates candidates sharing the same window frame.
+    /// Prefers (a) non-empty accessibilityIdentifier, then (b) UIControl, then (c) first.
+    static func deduplicateCandidates(_ candidates: [Candidate]) -> [Candidate] {
+        var groups: [String: [Candidate]] = [:]
+        var order: [String] = []
 
-        let candidates = await MainActor.run { () -> [Candidate] in
-            let all = scanCandidates(matching: query)
-            for c in all {
-                STLog.log("SptTerm: uihook candidate: \(c.summary)")
+        for c in candidates {
+            let r = c.windowFrame
+            let key = "\(Int(r.origin.x.rounded())),\(Int(r.origin.y.rounded())),\(Int(r.size.width.rounded())),\(Int(r.size.height.rounded()))"
+            if groups[key] == nil {
+                order.append(key)
+                groups[key] = []
             }
-            return all
+            groups[key]?.append(c)
         }
 
-        guard let best = (candidates.first(where: { $0.isOnScreen }) ?? candidates.first) else {
-            STLog.log("SptTerm: uihook no candidates (full-screen player probably not open)")
-            return (false, "none", "none", nil)
+        var results: [Candidate] = []
+        for key in order {
+            guard let list = groups[key] else { continue }
+            let sorted = list.sorted { a, b in
+                let aHasId = !a.identifier.isEmpty
+                let bHasId = !b.identifier.isEmpty
+                if aHasId != bHasId {
+                    return aHasId && !bHasId
+                }
+                let aIsCtrl = a.view is UIControl
+                let bIsCtrl = b.view is UIControl
+                if aIsCtrl != bIsCtrl {
+                    return aIsCtrl && !bIsCtrl
+                }
+                return false
+            }
+            if let best = sorted.first {
+                results.append(best)
+            }
+        }
+        return results
+    }
+
+    /// One-shot press of Spotify's repeat or shuffle button.
+    /// Chooses the best visible on-screen candidate (deduped by frame), triggers once.
+    /// For shuffle: handles second-mode menu diffing and activation.
+    /// Waits 0.6s and returns the read-back.
+    static func press(type: String) async -> UIHookPressResult {
+        let isShuffle = type.lowercased().contains("shuffle")
+        let query = isShuffle ? "shuffle" : "repeat"
+
+        // 1. Pre-press element snapshot for shuffle diffing
+        let prePressElements: [STUIElementSnapshot] = await MainActor.run {
+            if isShuffle {
+                return STSpotifyUIElements.snapshotAllAccessibleElements()
+            }
+            return []
+        }
+
+        // 2. Discover candidates and pick best candidate
+        let chosenCandidate = await MainActor.run { () -> Candidate? in
+            let raw = scanCandidates(matching: query)
+            let deduped = deduplicateCandidates(raw)
+            for c in deduped {
+                STLog.log("SptTerm: uihook candidate: \(c.summary)")
+            }
+            let onScreen = deduped.filter { $0.isOnScreen }
+            let sorted = onScreen.sorted { a, b in
+                let aHasId = !a.identifier.isEmpty
+                let bHasId = !b.identifier.isEmpty
+                if aHasId != bHasId { return aHasId && !bHasId }
+                let aIsCtrl = a.view is UIControl
+                let bIsCtrl = b.view is UIControl
+                if aIsCtrl != bIsCtrl { return aIsCtrl && !bIsCtrl }
+                return false
+            }
+            return sorted.first ?? deduped.first
+        }
+
+        guard let best = chosenCandidate else {
+            STLog.log("SptTerm: uihook \(query) no candidates (full-screen player probably not open)")
+            return UIHookPressResult(
+                candidateFound: false,
+                activated: false,
+                beforeDesc: "none",
+                afterLabel: "",
+                afterValue: "",
+                isSelected: false
+            )
         }
 
         let beforeDesc = "label=\"\(best.label)\" val=\"\(best.value)\" selected=\(best.isSelected ? 1 : 0)"
         STLog.log("SptTerm: uihook press [\(query)] BEFORE: \(best.className) \(beforeDesc)")
 
+        // 3. Press once only
         let activated = await MainActor.run { () -> Bool in
             var ok = best.view.accessibilityActivate()
             if !ok, let control = best.view as? UIControl {
@@ -126,17 +204,64 @@ final class STSpotifyUIHook {
             return ok
         }
 
+        // 4. Wait 0.6 s
         try? await Task.sleep(nanoseconds: 600_000_000)
 
-        let afterDesc = await MainActor.run { () -> String in
+        // 5. Post-press inspection and shuffle second-mode menu handling
+        let (afterLabel, afterVal, curSel) = await MainActor.run { () -> (String, String, Bool) in
+            if isShuffle {
+                let postPressElements = STSpotifyUIElements.snapshotAllAccessibleElements()
+                let preKeys = Set(prePressElements.map(\.key))
+                let newElements = postPressElements.filter { !preKeys.contains($0.key) }
+
+                for elem in newElements {
+                    STLog.log("SptTerm: uihook new element: [\(elem.className)] label=\"\(elem.label)\" id=\"\(elem.identifier)\" val=\"\(elem.value)\" frame=\(NSCoder.string(for: elem.frame))")
+                }
+
+                if !newElements.isEmpty {
+                    let candidates = newElements.filter { elem in
+                        guard elem.isOnScreen else { return false }
+                        let lower = elem.label.lowercased()
+                        return lower.contains("shuffle") &&
+                            !lower.contains("smart") &&
+                            !lower.contains("ai") &&
+                            !lower.contains("dj") &&
+                            !lower.contains("enhance") &&
+                            !lower.contains("auto")
+                    }
+
+                    if candidates.count == 1 {
+                        let target = candidates[0]
+                        if let view = target.view {
+                            var ok = view.accessibilityActivate()
+                            if !ok, let control = view as? UIControl {
+                                control.sendActions(for: .touchUpInside)
+                                ok = true
+                            }
+                            STLog.log("SptTerm: uihook activated standard shuffle option: [\(target.className)] label=\"\(target.label)\" ret=\(ok ? 1 : 0)")
+                        }
+                    } else if candidates.count > 1 {
+                        STLog.log("SptTerm: uihook shuffle menu ambiguous (\(candidates.count) matches)")
+                    } else {
+                        STLog.log("SptTerm: uihook shuffle menu ambiguous (no standard shuffle option)")
+                    }
+                }
+            }
+
             let curLabel = best.view.accessibilityLabel ?? ""
             let curVal = best.view.accessibilityValue ?? ""
             let curSel = (best.view as? UIControl)?.isSelected ?? false
-            let desc = "label=\"\(curLabel)\" val=\"\(curVal)\" selected=\(curSel ? 1 : 0)"
-            STLog.log("SptTerm: uihook press [\(query)] AFTER (0.6s): \(desc)")
-            return desc
+            STLog.log("SptTerm: uihook press [\(query)] AFTER (0.6s): label=\"\(curLabel)\" val=\"\(curVal)\" selected=\(curSel ? 1 : 0)")
+            return (curLabel, curVal, curSel)
         }
 
-        return (activated, beforeDesc, afterDesc, best)
+        return UIHookPressResult(
+            candidateFound: true,
+            activated: activated,
+            beforeDesc: beforeDesc,
+            afterLabel: afterLabel,
+            afterValue: afterVal,
+            isSelected: curSel
+        )
     }
 }
