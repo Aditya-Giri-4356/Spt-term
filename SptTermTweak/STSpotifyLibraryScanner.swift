@@ -1,6 +1,6 @@
 import UIKit
 
-/// Represents an on-screen accessible element with ancestor hierarchy and playlist-row classification.
+/// Represents an on-screen accessible element with ancestor hierarchy and classification details.
 struct STScannedElement {
     let className: String
     let accessibilityIdentifier: String
@@ -9,21 +9,21 @@ struct STScannedElement {
     let frame: CGRect
     let ancestors: [String]
     let isPlaylistCandidate: Bool
+    let parsedName: String?
     let matchedRule: String?
     weak var view: UIView?
 
     var summary: String {
         let idPart = accessibilityIdentifier.isEmpty ? "" : " id=\"\(accessibilityIdentifier)\""
         let valPart = value.isEmpty ? "" : " val=\"\(value)\""
-        let candPart = isPlaylistCandidate ? " [CANDIDATE: \(matchedRule ?? "")]" : ""
+        let candPart = isPlaylistCandidate ? " [PLAYLIST: \(parsedName ?? "") via \(matchedRule ?? "")]" : ""
         let ancPart = ancestors.isEmpty ? "" : " ancestors=\(ancestors.joined(separator: "->"))"
         return "[\(className)] label=\"\(label)\"\(idPart)\(valPart) frame=(\(Int(frame.origin.x)),\(Int(frame.origin.y)),\(Int(frame.width)),\(Int(frame.height)))\(ancPart)\(candPart)"
     }
 }
 
-/// Scans on-screen labelled accessible elements from Spotify's non-overlay windows,
-/// classifies candidates for playlist rows using strict heuristics, and coordinates
-/// with STLibraryCache.
+/// Scans on-screen accessible elements from Spotify's non-overlay windows,
+/// applies strict heuristic classification, and synchronizes with STLibraryCache v2.
 @MainActor
 final class STSpotifyLibraryScanner {
 
@@ -48,9 +48,14 @@ final class STSpotifyLibraryScanner {
     }
 
     /// Enumerates up to 200 on-screen labelled accessible elements across non-overlay windows.
-    static func scanOnScreenElements() -> [STScannedElement] {
+    static func scanOnScreenElements(logSummary: Bool = false) -> [STScannedElement] {
         var elements: [STScannedElement] = []
         let screenBounds = UIScreen.main.bounds
+
+        var keptCount = 0
+        var skippedKind = 0
+        var skippedNowPlaying = 0
+        var skippedNoParse = 0
 
         for scene in UIApplication.shared.connectedScenes {
             guard let windowScene = scene as? UIWindowScene else { continue }
@@ -58,15 +63,26 @@ final class STSpotifyLibraryScanner {
                 if window is STTweakWindow || window.windowLevel > UIWindow.Level.alert {
                     continue
                 }
-                collectElements(in: window, window: window, screenBounds: screenBounds, elements: &elements)
-                if elements.count >= 200 {
-                    break
-                }
+                collectElements(
+                    in: window,
+                    window: window,
+                    screenBounds: screenBounds,
+                    elements: &elements,
+                    keptCount: &keptCount,
+                    skippedKind: &skippedKind,
+                    skippedNowPlaying: &skippedNowPlaying,
+                    skippedNoParse: &skippedNoParse
+                )
+                if elements.count >= 200 { break }
             }
-            if elements.count >= 200 {
-                break
-            }
+            if elements.count >= 200 { break }
         }
+
+        if logSummary {
+            let totalSkipped = skippedKind + skippedNowPlaying + skippedNoParse
+            STLog.log("SptTerm: libscan: kept \(keptCount), skipped \(totalSkipped) (kind=\(skippedKind), nowplaying=\(skippedNowPlaying), noparse=\(skippedNoParse))")
+        }
+
         return elements
     }
 
@@ -74,7 +90,11 @@ final class STSpotifyLibraryScanner {
         in view: UIView,
         window: UIWindow,
         screenBounds: CGRect,
-        elements: inout [STScannedElement]
+        elements: inout [STScannedElement],
+        keptCount: inout Int,
+        skippedKind: inout Int,
+        skippedNowPlaying: inout Int,
+        skippedNoParse: inout Int
     ) {
         if elements.count >= 200 { return }
 
@@ -102,17 +122,31 @@ final class STSpotifyLibraryScanner {
                     curr = parent.superview
                 }
 
-                // Evaluate heuristic playlist-row classification
-                let classification = classifyPlaylistRow(
-                    view: view,
-                    className: className,
+                // Evaluate strict playlist classifier
+                let classification = classifyStrictPlaylistRow(
                     label: trimmedLabel,
-                    winFrame: winFrame,
                     ancestors: ancestors
                 )
 
-                if classification.isCandidate {
-                    STLog.log("SptTerm: libscan candidate matched: [\(className)] label=\"\(trimmedLabel)\" rule=\(classification.rule ?? "")")
+                var isCandidate = false
+                var parsedName: String? = nil
+                var matchedRule: String? = nil
+
+                switch classification {
+                case .kept(let name, let rule):
+                    isCandidate = true
+                    parsedName = name
+                    matchedRule = rule
+                    keptCount += 1
+                case .skippedNowPlaying:
+                    skippedNowPlaying += 1
+                case .skippedKind:
+                    skippedKind += 1
+                case .skippedNoParse:
+                    skippedNoParse += 1
+                case .skippedNotYourLibrary:
+                    // Not in YourLibrary hierarchy
+                    break
                 }
 
                 elements.append(STScannedElement(
@@ -122,8 +156,9 @@ final class STSpotifyLibraryScanner {
                     value: val,
                     frame: winFrame,
                     ancestors: ancestors,
-                    isPlaylistCandidate: classification.isCandidate,
-                    matchedRule: classification.rule,
+                    isPlaylistCandidate: isCandidate,
+                    parsedName: parsedName,
+                    matchedRule: matchedRule,
                     view: view
                 ))
 
@@ -132,94 +167,67 @@ final class STSpotifyLibraryScanner {
         }
 
         for subview in view.subviews {
-            collectElements(in: subview, window: window, screenBounds: screenBounds, elements: &elements)
+            collectElements(
+                in: subview,
+                window: window,
+                screenBounds: screenBounds,
+                elements: &elements,
+                keptCount: &keptCount,
+                skippedKind: &skippedKind,
+                skippedNowPlaying: &skippedNowPlaying,
+                skippedNoParse: &skippedNoParse
+            )
             if elements.count >= 200 { return }
         }
     }
 
-    /// Evaluates whether an accessible element matches the heuristic playlist-row requirements:
-    /// 1. Label length between 2 and 120 characters.
-    /// 2. Frame width at least 200pt.
-    /// 3. Inside a scrollable container ancestor (UICollectionView/UITableView/UIScrollView).
-    /// 4. Cell-like or button-like element (UIControl, UICollectionViewCell, UITableViewCell, or matching class/trait).
-    /// 5. NOT a tab-bar or navigation-bar item.
-    static func classifyPlaylistRow(
-        view: UIView,
-        className: String,
-        label: String,
-        winFrame: CGRect,
-        ancestors: [String]
-    ) -> (isCandidate: Bool, rule: String?) {
-        guard label.count >= 2 && label.count <= 120 else {
-            return (false, nil)
-        }
-
-        guard winFrame.width >= 200.0 else {
-            return (false, nil)
-        }
-
-        let lowerClass = className.lowercased()
-        if lowerClass.contains("tabbar") || lowerClass.contains("navigationbar") || lowerClass.contains("navbar") {
-            return (false, nil)
-        }
-        for anc in ancestors {
-            let lowerAnc = anc.lowercased()
-            if lowerAnc.contains("tabbar") || lowerAnc.contains("navigationbar") || lowerAnc.contains("navbar") {
-                return (false, nil)
-            }
-        }
-
-        var scrollAncestor: String? = nil
-        var currentParent = view.superview
-        while let p = currentParent {
-            if p is UIScrollView {
-                scrollAncestor = NSStringFromClass(type(of: p))
-                break
-            }
-            let pName = NSStringFromClass(type(of: p)).lowercased()
-            if pName.contains("scrollview") || pName.contains("collectionview") || pName.contains("tableview") {
-                scrollAncestor = NSStringFromClass(type(of: p))
-                break
-            }
-            currentParent = p.superview
-        }
-        guard let scrollName = scrollAncestor else {
-            return (false, nil)
-        }
-
-        let isCellOrControl = (view is UIControl)
-            || (view is UICollectionViewCell)
-            || (view is UITableViewCell)
-            || lowerClass.contains("cell")
-            || lowerClass.contains("button")
-            || lowerClass.contains("row")
-            || lowerClass.contains("item")
-            || lowerClass.contains("control")
-            || (view.accessibilityTraits.rawValue & UIAccessibilityTraits.button.rawValue) != 0
-
-        guard isCellOrControl else {
-            return (false, nil)
-        }
-
-        let ruleDesc = "cell_or_btn in \(scrollName), w=\(Int(winFrame.width))>=200, len=\(label.count)"
-        return (true, ruleDesc)
+    private enum STPlaylistRowResult {
+        case kept(name: String, rule: String)
+        case skippedNowPlaying
+        case skippedKind(kind: String)
+        case skippedNoParse
+        case skippedNotYourLibrary
     }
 
-    /// Scans on-screen elements, extracts playlist candidates, merges into cache, and returns all cached items.
+    /// Evaluates strict playlist row rules:
+    /// (a) Some ancestor class name contains "YourLibrary"
+    /// (b) No ancestor class name contains "NowPlaying"
+    /// (c) The label parses as kind Playlist
+    private static func classifyStrictPlaylistRow(
+        label: String,
+        ancestors: [String]
+    ) -> STPlaylistRowResult {
+        // (b) No ancestor class name contains "NowPlaying"
+        if ancestors.contains(where: { $0.contains("NowPlaying") }) {
+            return .skippedNowPlaying
+        }
+
+        // (a) Some ancestor class name contains "YourLibrary"
+        guard ancestors.contains(where: { $0.contains("YourLibrary") }) else {
+            return .skippedNotYourLibrary
+        }
+
+        // (c) Label parsing
+        let parsed = STLibraryLabelParser.classifyLibraryLabel(label)
+        switch parsed {
+        case .playlist(let name):
+            return .kept(name: name, rule: "YourLibrary + kind Playlist")
+        case .otherKind(let kind):
+            return .skippedKind(kind: kind)
+        case .noParse:
+            return .skippedNoParse
+        }
+    }
+
+    /// Scans on-screen elements, extracts playlist candidates, merges into cache v2, and returns all cached items.
     static func scanAndCachePlaylists() -> [STCachedPlaylist] {
-        let elements = scanOnScreenElements()
+        let elements = scanOnScreenElements(logSummary: true)
         let candidates = elements.filter { $0.isPlaylistCandidate }
 
         var discovered: [STCachedPlaylist] = []
         for c in candidates {
-            let rawLabel = c.label
-            let cleanName: String
-            if let first = rawLabel.components(separatedBy: ",").first?.trimmingCharacters(in: .whitespacesAndNewlines), !first.isEmpty {
-                cleanName = first
-            } else {
-                cleanName = rawLabel
-            }
-            discovered.append(STCachedPlaylist(name: cleanName, label: rawLabel))
+            guard let name = c.parsedName else { continue }
+            discovered.append(STCachedPlaylist(name: name, lastLabel: c.label))
         }
 
         if !discovered.isEmpty {
@@ -229,19 +237,20 @@ final class STSpotifyLibraryScanner {
         return STLibraryCache.shared.allPlaylists()
     }
 
-    /// Activates an on-screen element with matching label.
-    static func activatePlaylist(label: String) -> (success: Bool, message: String) {
-        let targetLabel = label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        let elements = scanOnScreenElements()
+    /// Activates an on-screen element with matching name or label.
+    static func activatePlaylist(nameOrLabel: String) -> (success: Bool, message: String) {
+        let target = nameOrLabel.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let elements = scanOnScreenElements(logSummary: false)
 
         guard let match = elements.first(where: {
-            $0.label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == targetLabel
+            ($0.parsedName?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == target)
+            || ($0.label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == target)
         }), let targetView = match.view else {
-            STLog.log("SptTerm: activatePlaylist NOT ON SCREEN: label=\"\(label)\"")
+            STLog.log("SptTerm: activatePlaylist NOT ON SCREEN: '\(nameOrLabel)'")
             return (false, "NOT ON SCREEN - open Spotify Library")
         }
 
-        let beforeDesc = "[\(match.className)] label=\"\(match.label)\" val=\"\(match.value)\""
+        let beforeDesc = "[\(match.className)] name=\"\(match.parsedName ?? "")\" label=\"\(match.label)\""
         STLog.log("SptTerm: activatePlaylist BEFORE: \(beforeDesc)")
 
         var activated = targetView.accessibilityActivate()
@@ -257,15 +266,13 @@ final class STSpotifyLibraryScanner {
 
     /// Executes `libscan` command logic.
     static func runScanCommand() -> [String] {
-        let elements = scanOnScreenElements()
+        let elements = scanOnScreenElements(logSummary: true)
         let candidates = elements.filter { $0.isPlaylistCandidate }
 
-        // Also merge discovered playlist candidates into cache
         var discovered: [STCachedPlaylist] = []
         for c in candidates {
-            let rawLabel = c.label
-            let cleanName = rawLabel.components(separatedBy: ",").first?.trimmingCharacters(in: .whitespacesAndNewlines) ?? rawLabel
-            discovered.append(STCachedPlaylist(name: cleanName.isEmpty ? rawLabel : cleanName, label: rawLabel))
+            guard let name = c.parsedName else { continue }
+            discovered.append(STCachedPlaylist(name: name, lastLabel: c.label))
         }
         if !discovered.isEmpty {
             STLibraryCache.shared.merge(playlists: discovered)

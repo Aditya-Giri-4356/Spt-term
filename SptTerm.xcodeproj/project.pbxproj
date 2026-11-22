@@ -157,6 +157,7 @@
 		A17D8BE2E766FA2A00BD39D2 /* STPKCE.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD900004A9A0031444DCB2BE /* STPKCE.swift */; };
 		A21894F19EDFA37CFF20F21F /* LyricsServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FCD8E410C8DB8C9C6A9B93C /* LyricsServiceProtocol.swift */; };
 		A2EC9E9FA225FFBB4AA97FCD /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78D2FCE9F59F55783F669C5 /* SearchView.swift */; };
+		A60B3F3CDC1CB6FDA2761438 /* STLibraryLabelParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921FA2D1EE64489071D50340 /* STLibraryLabelParser.swift */; };
 		A6A08AED35D8772B6C24EB8A /* MockArtworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08E2254DD4007AD1C7832B59 /* MockArtworkService.swift */; };
 		A7B82A297F665B7828BC3718 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D388FDC1490A64CD4C654911 /* HomeView.swift */; };
 		A8BFABF968E89ECA6568C878 /* ArtworkProviding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46BD00244A8CCEAD4472A271 /* ArtworkProviding.swift */; };
@@ -290,6 +291,7 @@
 		8E187375E3F959BED46414B3 /* STSpotifyUIHook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyUIHook.swift; sourceTree = "<group>"; };
 		9057D060F8BB03140C4A6783 /* STSpotifyAuth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyAuth.swift; sourceTree = "<group>"; };
 		91417895E82AE66CCDDF4208 /* STLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STLog.swift; sourceTree = "<group>"; };
+		921FA2D1EE64489071D50340 /* STLibraryLabelParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STLibraryLabelParser.swift; sourceTree = "<group>"; };
 		93EFB2367637E568EE3090DA /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
 		9857982DC663D8AA171D03A4 /* SptTerm.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SptTerm.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		98A7C80CCE5DA0AA29C6B740 /* PlayerServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerServiceProtocol.swift; sourceTree = "<group>"; };
@@ -525,6 +527,7 @@
 				CB8E033852E8A5AD89B124CD /* STInProcessArtworkService.swift */,
 				C21DBD54251EFE14B2C495A8 /* STInProcessPlayerService.swift */,
 				55940AE464BF3DD00CB21FA6 /* STLibraryCache.swift */,
+				921FA2D1EE64489071D50340 /* STLibraryLabelParser.swift */,
 				C749F9B4EB8B9FD55B025905 /* STMediaRemoteExplorationCommands.swift */,
 				E8CAAB22509F7EF72B170DCA /* STMediaRemoteModeLadder.swift */,
 				F06BDA012DED1C50A91BCE7E /* STMRStateDump.swift */,
@@ -919,6 +922,7 @@
 				0E09B83EBF72708B60A55ADB /* STInProcessPlayerService.swift in Sources */,
 				9EEB73136C875822F7C51B3C /* STLRCParser.swift in Sources */,
 				89F01720EEA3BE4EDB8E0B75 /* STLibraryCache.swift in Sources */,
+				A60B3F3CDC1CB6FDA2761438 /* STLibraryLabelParser.swift in Sources */,
 				949C773F2EDE7879C63D24B0 /* STLog.swift in Sources */,
 				9ADAB7CA96989918504E2D2D /* STLyricsCommands.swift in Sources */,
 				32E6C967E2C816ED3FEDCFE9 /* STLyricsService.swift in Sources */,

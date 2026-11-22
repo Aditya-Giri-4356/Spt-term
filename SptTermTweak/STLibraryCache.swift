@@ -1,17 +1,20 @@
 import Foundation
 
-/// Persistent store for on-screen discovered Spotify playlists.
-/// Stores names and accessibility labels only. Contains no user IDs, no tokens, no credentials.
+/// Persistent store for on-screen discovered Spotify playlists (v2).
+/// Stores names and last seen labels only. Contains no user IDs, no tokens, no credentials.
 final class STLibraryCache {
     static let shared = STLibraryCache()
 
     private let defaults: UserDefaults
-    private let key = "sptterm.library.cached_playlists"
+    private let key = "sptterm.library.cached_playlists.v2"
+    private let legacyKey = "sptterm.library.cached_playlists"
     private var cachedItems: [STCachedPlaylist] = []
     private let lock = NSLock()
 
     init(defaults: UserDefaults = UserDefaults(suiteName: "com.aditya.sptterm.tweak") ?? .standard) {
         self.defaults = defaults
+        // Purge legacy v1 cache on first load so polluted entries disappear
+        defaults.removeObject(forKey: legacyKey)
         self.cachedItems = Self.load(from: defaults, key: key)
     }
 
@@ -37,7 +40,7 @@ final class STLibraryCache {
     }
 
     /// Merges newly scanned playlists into the cache.
-    /// Dedupes by label; preserves original `firstSeen` for existing items; caps at 500 entries.
+    /// Dedupes by parsed name; updates lastLabel on every re-scan; preserves original `firstSeen`; caps at 500.
     @discardableResult
     func merge(playlists: [STCachedPlaylist]) -> Int {
         lock.lock()
@@ -45,12 +48,12 @@ final class STLibraryCache {
 
         var countAdded = 0
         for item in playlists {
-            if let existingIndex = cachedItems.firstIndex(where: { $0.label == item.label }) {
-                // Already in cache; update name if cleaner, but preserve firstSeen
+            if let existingIndex = cachedItems.firstIndex(where: { $0.name == item.name }) {
+                // Already in cache: update lastLabel, keep original firstSeen
                 let existing = cachedItems[existingIndex]
                 cachedItems[existingIndex] = STCachedPlaylist(
-                    name: item.name.isEmpty ? existing.name : item.name,
-                    label: existing.label,
+                    name: existing.name,
+                    lastLabel: item.lastLabel,
                     firstSeen: existing.firstSeen
                 )
             } else {
@@ -66,7 +69,6 @@ final class STLibraryCache {
         }
 
         save()
-        STLog.log("SptTerm: library cache merged \(countAdded) new playlist(s), total in cache: \(cachedItems.count)")
         return countAdded
     }
 

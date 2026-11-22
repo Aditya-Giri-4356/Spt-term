@@ -346,7 +346,7 @@ final class STSessionLibraryService: LibraryServiceProtocol {
 
     @MainActor
     func activatePlaylist(label: String) -> (success: Bool, message: String) {
-        return STSpotifyLibraryScanner.activatePlaylist(label: label)
+        return STSpotifyLibraryScanner.activatePlaylist(nameOrLabel: label)
     }
 
     func clearPlaylistCache() {
