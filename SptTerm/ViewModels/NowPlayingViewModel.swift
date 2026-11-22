@@ -19,8 +19,14 @@ final class NowPlayingViewModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] newState in
                 guard let self else { return }
-                state = newState
-                artwork = Self.resolveArtwork(provider: artworkProvider, track: newState.currentTrack)
+                let trackChanged = self.state.currentTrack?.id != newState.currentTrack?.id
+                let rowsChanged = self.state.currentTrack?.artworkMatrixRows != newState.currentTrack?.artworkMatrixRows
+                self.state = newState
+                if trackChanged || rowsChanged {
+                    STPerfLogger.shared.measureBlock(label: "artwork-apply") {
+                        self.artwork = Self.resolveArtwork(provider: artworkProvider, track: newState.currentTrack)
+                    }
+                }
             }
     }
 

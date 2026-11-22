@@ -2,7 +2,18 @@ import SwiftUI
 
 /// Deterministic glyph-grid artwork. Same seed always yields the same art.
 final class MockArtworkService: ArtworkProviding {
+    private var cache: [String: TrackArtwork] = [:]
+    private let lock = NSLock()
+
     func artwork(seed: String, columns: Int) -> TrackArtwork {
+        let key = "\(seed)_\(columns)"
+        lock.lock()
+        if let hit = cache[key] {
+            lock.unlock()
+            return hit
+        }
+        lock.unlock()
+
         let cols = max(columns, 4)
         let rows = max(Int((Double(cols) * 0.72).rounded()), 4)
 
@@ -50,7 +61,11 @@ final class MockArtworkService: ArtworkProviding {
         }
 
         let accent = Color(hue: hue, saturation: 0.62, brightness: 0.95)
-        return TrackArtwork(matrix: ASCIIGlyphMatrix(rows: lines), accent: accent)
+        let art = TrackArtwork(matrix: ASCIIGlyphMatrix(rows: lines), accent: accent)
+        lock.lock()
+        cache[key] = art
+        lock.unlock()
+        return art
     }
 
     private static func hash(_ seed: String) -> UInt64 {

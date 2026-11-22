@@ -241,6 +241,7 @@ final class STTweakViewController: UIViewController {
         view.addSubview(hc.view)
         hc.didMove(toParent: self)
         self.hostingController = hc
+        STPerfLogger.shared.currentScreen = "terminal"
 
         NSLog("[SptTermTweak] Expanded full-screen terminal window")
     }
@@ -255,6 +256,7 @@ final class STTweakViewController: UIViewController {
 
         self.launchPill?.isHidden = false
         self.isExpanded = false
+        STPerfLogger.shared.currentScreen = "pill"
 
         if let prev = previousKeyWindow {
             prev.makeKey()

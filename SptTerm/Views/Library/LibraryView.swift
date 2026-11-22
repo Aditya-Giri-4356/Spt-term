@@ -159,7 +159,7 @@ struct LibraryView: View {
     // MARK: - List view
 
     private var listView: some View {
-        VStack(spacing: TermSpace.sm) {
+        LazyVStack(spacing: TermSpace.sm) {
             if filter == .all || filter == .playlists {
                 groupContainer(id: "playlists", title: "/Playlists", count: viewModel.playlists.count) {
                     ForEach(sortedPlaylists) { playlist in
@@ -313,7 +313,7 @@ struct LibraryView: View {
             .buttonStyle(TermPressStyle())
 
             if expandedGroups.contains(id) {
-                VStack(alignment: .leading, spacing: 0) {
+                LazyVStack(alignment: .leading, spacing: 0) {
                     content()
                 }
                 .padding(.leading, TermSpace.sm)

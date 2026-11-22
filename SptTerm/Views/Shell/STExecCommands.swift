@@ -276,5 +276,22 @@ final class STExecCommandRegistry {
                 return ["usage: log [clear|tail <n>|grep <text>|copy]"]
             }
         })
+
+        // Performance diagnostics
+        register(STExecCommand(name: "perf", usage: "perf [on|off]", help: "CADisplayLink hitch and main thread logger") { _, args, _ in
+            guard let first = args.first?.lowercased() else {
+                let status = STPerfLogger.shared.isEnabled ? "on" : "off"
+                return ["> perf: \(status) (use `perf on` or `perf off`)"]
+            }
+            if first == "on" || first == "1" {
+                STPerfLogger.shared.setEnabled(true)
+                return ["> perf: on (logging hitches > 50ms, main-thread blocks > 8ms)"]
+            } else if first == "off" || first == "0" {
+                STPerfLogger.shared.setEnabled(false)
+                return ["> perf: off"]
+            } else {
+                return ["usage: perf [on|off]"]
+            }
+        })
     }
 }

@@ -102,7 +102,9 @@ final class STInProcessArtworkService: ArtworkProviding {
 
                 if let resolved = await self.fetchAndProcessArtwork(for: uri, generation: gen) {
                     await MainActor.run {
-                        onResolved(resolved)
+                        STPerfLogger.shared.measureBlock(label: "artwork-apply") {
+                            onResolved(resolved)
+                        }
                     }
                     return
                 }

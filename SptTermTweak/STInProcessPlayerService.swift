@@ -187,21 +187,40 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
             STInProcessArtworkService.shared.startRetrySequence(for: current.id) { [weak self] resolved in
                 guard let self else { return }
                 if self.state.currentTrack?.id == current.id {
-                    var updated = self.state
-                    updated.currentTrack?.artworkMatrixRows = resolved.matrix.rows
-                    updated.currentTrack?.artworkAccentHex = resolved.accentHex
-                    self.publish(updated)
+                    STPerfLogger.shared.measureBlock(label: "artwork-apply") {
+                        var updated = self.state
+                        updated.currentTrack?.artworkMatrixRows = resolved.matrix.rows
+                        updated.currentTrack?.artworkAccentHex = resolved.accentHex
+                        self.publish(updated)
+                    }
                 }
             }
         }
 
-        if next != state {
+        let isOnlyProgressChange = (
+            !isTrackChanged &&
+            next.isPlaying == state.isPlaying &&
+            next.duration == state.duration &&
+            next.isShuffled == state.isShuffled &&
+            next.repeatMode == state.repeatMode &&
+            next.volume == state.volume &&
+            next.currentTrack?.artworkMatrixRows == state.currentTrack?.artworkMatrixRows &&
+            next.currentTrack?.artworkAccentHex == state.currentTrack?.artworkAccentHex
+        )
+
+        if isOnlyProgressChange {
+            if Int(next.progress) != Int(state.progress) || abs(next.progress - state.progress) >= 1.0 {
+                publish(next)
+            }
+        } else if next != state {
             publish(next)
         }
     }
 
     private func publish(_ state: PlayerState) {
-        subject.send(state)
+        STPerfLogger.shared.measureBlock(label: "player-state publish") {
+            subject.send(state)
+        }
     }
 
     // MARK: - MediaRemote Control

@@ -16,6 +16,7 @@
 		0490FD88F399DF29DC651BEB /* TemporaryPlaceholders.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEBD18A3317524AF011B5728 /* TemporaryPlaceholders.swift */; };
 		05493AC8730D1058688B03C7 /* NowPlayingLyricsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E8A1F8AF055124E090AEA9 /* NowPlayingLyricsPanel.swift */; };
 		056C099AED74563601DDEC4C /* StatusPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E1F2EB27359B948A47AAD54 /* StatusPill.swift */; };
+		0601F81F60FA30D29E29A616 /* STPerfLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADB0BF2BE398D158355907B /* STPerfLogger.swift */; };
 		078C68D0EAD4F47B28B01A00 /* TimeScrubber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044DDD90E1EC1B2E0F683E58 /* TimeScrubber.swift */; };
 		099B381572E1011D0D488C22 /* MockCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B05B3DD781D660F9B414582 /* MockCatalog.swift */; };
 		0A3A30D53C172C2AE50D7604 /* ServiceEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A56AADD320E1B4F47A80470C /* ServiceEnvironment.swift */; };
@@ -82,6 +83,7 @@
 		5F2DC9646AFE116304D15469 /* MockAudioEffectsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 992A9868B2293699E90E7AD7 /* MockAudioEffectsService.swift */; };
 		60228C29023FAAF026584F49 /* ASCIIRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42BD735FAFDE120435103B1 /* ASCIIRule.swift */; };
 		6065B66D40A53F209EADF749 /* STRemoteArtworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51280F6CA3403888D3C655E5 /* STRemoteArtworkService.swift */; };
+		60949DB0D587C6EC7185ACE9 /* STPerfLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = AADB0BF2BE398D158355907B /* STPerfLogger.swift */; };
 		61E0F6E3364360A06C523DB8 /* STSpotifyDTOs.swift in Sources */ = {isa = PBXBuildFile; fileRef = D66DB67E7A546519EE037F55 /* STSpotifyDTOs.swift */; };
 		62652B95D841FF66CEB6937C /* MockAuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB8F3F4DCB804F764CBCCE5D /* MockAuthService.swift */; };
 		63DF2675E0FE04BE7BB2B8E0 /* ThemePalettes+HandTuned.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CCC137ED8C70A2D10589DE /* ThemePalettes+HandTuned.swift */; };
@@ -276,6 +278,7 @@
 		A56AADD320E1B4F47A80470C /* ServiceEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceEnvironment.swift; sourceTree = "<group>"; };
 		A598F993FE4AB067A3634B00 /* Motion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Motion.swift; sourceTree = "<group>"; };
 		A5C204C6226B401B464B5AF4 /* BracketButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BracketButton.swift; sourceTree = "<group>"; };
+		AADB0BF2BE398D158355907B /* STPerfLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STPerfLogger.swift; sourceTree = "<group>"; };
 		AB8F3F4DCB804F764CBCCE5D /* MockAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthService.swift; sourceTree = "<group>"; };
 		AD444CCD4216877E064CB9DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AD900004A9A0031444DCB2BE /* STPKCE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STPKCE.swift; sourceTree = "<group>"; };
@@ -580,6 +583,7 @@
 				98A7C80CCE5DA0AA29C6B740 /* PlayerServiceProtocol.swift */,
 				D26CCE8F5AF1FDB61918AB10 /* STAuthServiceProtocol.swift */,
 				91417895E82AE66CCDDF4208 /* STLog.swift */,
+				AADB0BF2BE398D158355907B /* STPerfLogger.swift */,
 				715FCF3FC8A237A03AAAD290 /* STSleepTimer.swift */,
 			);
 			path = Protocols;
@@ -764,6 +768,7 @@
 				57CEAD3B7AC10915B1186D35 /* STLog.swift in Sources */,
 				7D7A3F5E934DD237E20BB887 /* STModeMappings.swift in Sources */,
 				A17D8BE2E766FA2A00BD39D2 /* STPKCE.swift in Sources */,
+				60949DB0D587C6EC7185ACE9 /* STPerfLogger.swift in Sources */,
 				03C4090B43B069969D56F936 /* STPresetAudioEffects.swift in Sources */,
 				6065B66D40A53F209EADF749 /* STRemoteArtworkService.swift in Sources */,
 				8D4B8372B7B87BCFC5D70CB7 /* STRemotePlayerService.swift in Sources */,
@@ -873,6 +878,7 @@
 				B2C6A7409E6520AFD00EDFF6 /* STMediaRemoteExplorationCommands.swift in Sources */,
 				6AB3BE90E2C485CCF4E3457C /* STMediaRemoteModeLadder.swift in Sources */,
 				9484A06BCB0D00A3156BECAE /* STModeMappings.swift in Sources */,
+				0601F81F60FA30D29E29A616 /* STPerfLogger.swift in Sources */,
 				4B6EE8CAAADA93CE3FAD671F /* STRootGate.swift in Sources */,
 				9FFD7E7E8903252AA27572A1 /* STSessionLibraryService.swift in Sources */,
 				D387508113E1282DEADD9EA7 /* STSleepTimer.swift in Sources */,

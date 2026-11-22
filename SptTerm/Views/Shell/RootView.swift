@@ -94,6 +94,7 @@ struct RootShellView: View {
                         selected: selectedTab,
                         onSelect: { tab in
                             selectedTab = tab
+                            STPerfLogger.shared.currentScreen = tab.rawValue
                             TermHaptic.tap()
                         }
                     )
@@ -110,6 +111,12 @@ struct RootShellView: View {
                 )
                 .transition(.move(edge: .bottom))
                 .zIndex(10)
+                .onAppear {
+                    STPerfLogger.shared.currentScreen = "now-playing"
+                }
+                .onDisappear {
+                    STPerfLogger.shared.currentScreen = selectedTab.rawValue
+                }
             }
         }
         .animation(.spring(response: 0.35, dampingFraction: 0.8), value: isNowPlayingExpanded)
