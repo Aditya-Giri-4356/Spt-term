@@ -32,7 +32,7 @@ final class NowPlayingViewModel: ObservableObject {
                     self.syncedLyrics = []
                     if STLyricsService.shared.isEnabled, let track = newState.currentTrack {
                         Task { @MainActor [weak self] in
-                            guard let self else { return }
+                            guard let self, STLyricsService.shared.isEnabled else { return }
                             if let fetched = await STLyricsService.shared.fetchLyrics(for: track) {
                                 if self.state.currentTrack?.id == track.id {
                                     self.syncedLyrics = fetched

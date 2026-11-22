@@ -406,6 +406,7 @@ struct PlayTabLyricsView: View {
         } else {
             EmptyView()
                 .task(id: playerService.state.currentTrack?.id) {
+                    guard STLyricsService.shared.isEnabled else { return }
                     if let track = playerService.state.currentTrack {
                         await loadLyrics(for: track)
                     } else {
@@ -420,6 +421,7 @@ struct PlayTabLyricsView: View {
         return lyrics[index].text
     }
 
+    @MainActor
     private func loadLyrics(for track: Track) async {
         guard STLyricsService.shared.isEnabled else {
             lyrics = []

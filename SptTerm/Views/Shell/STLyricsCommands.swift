@@ -3,8 +3,8 @@ import Foundation
 /// Registers lyrics-related EXEC commands.
 final class STLyricsCommands {
     @MainActor
-    static func register() {
-        let reg = STExecCommandRegistry.shared
+    static func register(into registry: STExecCommandRegistry? = nil) {
+        let reg = registry ?? STExecCommandRegistry.shared
 
         reg.register(STExecCommand(name: "lyrics", usage: "lyrics [on|off|show|status]", help: "synced lyrics toggle and viewer") { _, args, ctx in
             let sub = args.first?.lowercased() ?? "status"
