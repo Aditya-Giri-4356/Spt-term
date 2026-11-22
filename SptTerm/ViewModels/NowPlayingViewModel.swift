@@ -5,6 +5,7 @@ import SwiftUI
 final class NowPlayingViewModel: ObservableObject {
     @Published private(set) var state: PlayerState
     @Published private(set) var artwork: TrackArtwork
+    @Published private(set) var syncedLyrics: [LyricsLine] = []
 
     private let player: PlayerServiceProtocol
     private let artworkProvider: ArtworkProviding
@@ -25,6 +26,19 @@ final class NowPlayingViewModel: ObservableObject {
                 if trackChanged || rowsChanged {
                     STPerfLogger.shared.measureBlock(label: "artwork-apply") {
                         self.artwork = Self.resolveArtwork(provider: artworkProvider, track: newState.currentTrack)
+                    }
+                }
+                if trackChanged {
+                    self.syncedLyrics = []
+                    if STLyricsService.shared.isEnabled, let track = newState.currentTrack {
+                        Task { @MainActor [weak self] in
+                            guard let self else { return }
+                            if let fetched = await STLyricsService.shared.fetchLyrics(for: track) {
+                                if self.state.currentTrack?.id == track.id {
+                                    self.syncedLyrics = fetched
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -56,9 +70,13 @@ final class NowPlayingViewModel: ObservableObject {
         player.setVolume(value)
     }
 
+    var activeLyrics: [LyricsLine] {
+        !syncedLyrics.isEmpty ? syncedLyrics : (state.currentTrack?.lyrics ?? [])
+    }
+
     var currentLyricIndex: Int {
-        guard let track = state.currentTrack, !track.lyrics.isEmpty else { return -1 }
-        let lines = track.lyrics
+        let lines = activeLyrics
+        guard !lines.isEmpty else { return -1 }
         var index = -1
         for (offset, line) in lines.enumerated() where line.time <= state.progress {
             index = offset

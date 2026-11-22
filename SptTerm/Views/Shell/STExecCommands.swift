@@ -39,6 +39,7 @@ final class STExecCommandRegistry {
 
     private init() {
         registerBuiltIns()
+        STLyricsCommands.register()
     }
 
     func register(_ command: STExecCommand) {

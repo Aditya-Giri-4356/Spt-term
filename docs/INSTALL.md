@@ -54,3 +54,9 @@
 3. Tap the pill to expand the full-screen retro phosphor CRT terminal interface.
 4. Tap `[ _ MINIMIZE ]` in the top-right corner to return to the standard Spotify UI with the floating pill intact.
 5. In the `[3:EXEC]` tab, use commands like `play`, `pause`, `next`, `prev`, `seek <seconds>`, `theme <name>`, `open <uri>`, `log`, and `log copy`.
+
+---
+
+## Privacy Notice (Synced Lyrics)
+
+When synced lyrics are enabled (`lyrics on`), track metadata (title, artist name, album title, and duration) is transmitted over HTTPS to [LRCLIB](https://lrclib.net) to retrieve synchronized lyrics. No Spotify account credentials, user identifiers, or private data are ever transmitted. Synced lyrics are disabled by default.

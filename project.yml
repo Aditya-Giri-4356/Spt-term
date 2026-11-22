@@ -47,6 +47,7 @@ targets:
       - path: SptTerm/Services/Mock
       - path: SptTerm/Services/ServiceEnvironment.swift
       - path: SptTerm/Services/Live/STSpotifyDTOs.swift
+      - path: SptTerm/Services/Live/STLyricsService.swift
     settings:
       base:
         PRODUCT_NAME: SptTermTweak

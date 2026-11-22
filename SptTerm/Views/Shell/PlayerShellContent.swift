@@ -46,6 +46,7 @@ struct HomeDestination: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: TermSpace.md) {
                     TerminalHeader(subtitle: "Home")
+                    PlayTabLyricsView()
 
                     if viewModel.isLoading {
                         HomeLoadingState()
@@ -362,5 +363,72 @@ struct HomeTile: View {
         }
         .buttonStyle(TermPressStyle())
         .accessibilityLabel(Text(title))
+    }
+}
+
+struct PlayTabLyricsView: View {
+    @Environment(\.playerService) private var playerService
+    @EnvironmentObject private var theme: TerminalTheme
+    @State private var lyrics: [LyricsLine] = []
+
+    var body: some View {
+        if STLyricsService.shared.isEnabled, let track = playerService.state.currentTrack, !lyrics.isEmpty {
+            let progress = playerService.state.progress
+            let currentIndex = lyrics.lastIndex(where: { $0.time <= progress }) ?? -1
+            let prevText = (currentIndex > 0 && currentIndex < lyrics.count) ? linesText(at: currentIndex - 1) : ""
+            let currText = (currentIndex >= 0 && currentIndex < lyrics.count) ? linesText(at: currentIndex) : linesText(at: 0)
+            let nextText = (currentIndex >= 0 && currentIndex + 1 < lyrics.count) ? linesText(at: currentIndex + 1) : linesText(at: 1)
+
+            ASCIIPanel(title: "LYRICS :: synced", trailing: "[LRCLIB]") {
+                VStack(alignment: .leading, spacing: 3) {
+                    if !prevText.isEmpty {
+                        Text("  " + prevText)
+                            .termType(TermType.bodySM, color: theme.palette.textMuted)
+                            .lineLimit(1)
+                    }
+                    HStack(spacing: 4) {
+                        Text("> " + currText)
+                            .termType(TermType.bodySM, color: theme.palette.accent)
+                            .lineLimit(1)
+                        BlinkingCursor(width: 6, height: 12)
+                    }
+                    if !nextText.isEmpty {
+                        Text("  " + nextText)
+                            .termType(TermType.bodySM, color: theme.palette.textMuted)
+                            .lineLimit(1)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .task(id: track.id) {
+                await loadLyrics(for: track)
+            }
+        } else {
+            EmptyView()
+                .task(id: playerService.state.currentTrack?.id) {
+                    if let track = playerService.state.currentTrack {
+                        await loadLyrics(for: track)
+                    } else {
+                        lyrics = []
+                    }
+                }
+        }
+    }
+
+    private func linesText(at index: Int) -> String {
+        guard index >= 0 && index < lyrics.count else { return "" }
+        return lyrics[index].text
+    }
+
+    private func loadLyrics(for track: Track) async {
+        guard STLyricsService.shared.isEnabled else {
+            lyrics = []
+            return
+        }
+        if let fetched = await STLyricsService.shared.fetchLyrics(for: track) {
+            lyrics = fetched
+        } else {
+            lyrics = []
+        }
     }
 }
