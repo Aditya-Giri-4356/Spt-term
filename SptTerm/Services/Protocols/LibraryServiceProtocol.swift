@@ -15,4 +15,21 @@ protocol LibraryServiceProtocol: AnyObject {
     func fetchTracks(ids: [String]) async throws -> [Track]
     func fetchLikedTracks() async throws -> [Track]
     func search(query: String) async throws -> SearchResults
+
+    // MARK: - On-screen Playlists Discovery (Tweak UI Hook)
+    func scanPlaylists() async -> [STCachedPlaylist]
+    func cachedPlaylists() -> [STCachedPlaylist]
+    @MainActor
+    func activatePlaylist(label: String) -> (success: Bool, message: String)
+    func clearPlaylistCache()
+}
+
+extension LibraryServiceProtocol {
+    func scanPlaylists() async -> [STCachedPlaylist] { [] }
+    func cachedPlaylists() -> [STCachedPlaylist] { [] }
+    @MainActor
+    func activatePlaylist(label: String) -> (success: Bool, message: String) {
+        (false, "NOT ON SCREEN - open Spotify Library")
+    }
+    func clearPlaylistCache() {}
 }

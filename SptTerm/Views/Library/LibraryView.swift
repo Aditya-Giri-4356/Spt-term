@@ -44,6 +44,7 @@ struct LibraryView: View {
     @Environment(\.playerService) private var player
 
     @State private var expandedGroups: Set<String> = ["playlists", "albums", "artists", "liked"]
+    @State private var hasAutoScanned: Bool = false
 
     init(
         viewModel: LibraryViewModel,
@@ -83,7 +84,14 @@ struct LibraryView: View {
                 .padding(.bottom, 140)
             }
         }
-        .task { await viewModel.load() }
+        .task {
+            await viewModel.load()
+            if !hasAutoScanned {
+                hasAutoScanned = true
+                try? await Task.sleep(nanoseconds: 1_000_000_000)
+                await viewModel.scanPlaylists()
+            }
+        }
     }
 
     // MARK: - Telemetry
@@ -161,15 +169,18 @@ struct LibraryView: View {
     private var listView: some View {
         LazyVStack(spacing: TermSpace.sm) {
             if filter == .all || filter == .playlists {
-                groupContainer(id: "playlists", title: "/Playlists", count: viewModel.playlists.count) {
-                    ForEach(sortedPlaylists) { playlist in
-                        LibraryRow(
-                            glyph: "♫",
-                            title: playlist.name,
-                            subtitle: playlist.owner,
-                            trailing: "\(playlist.trackIDs.count) tracks"
-                        ) {
-                            path.append(.playlist(id: playlist.id))
+                STPlaylistCacheSection(viewModel: viewModel)
+                if !viewModel.playlists.isEmpty {
+                    groupContainer(id: "playlists", title: "/Playlists", count: viewModel.playlists.count) {
+                        ForEach(sortedPlaylists) { playlist in
+                            LibraryRow(
+                                glyph: "♫",
+                                title: playlist.name,
+                                subtitle: playlist.owner,
+                                trailing: "\(playlist.trackIDs.count) tracks"
+                            ) {
+                                path.append(.playlist(id: playlist.id))
+                            }
                         }
                     }
                 }

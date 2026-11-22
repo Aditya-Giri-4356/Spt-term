@@ -331,4 +331,25 @@ final class STSessionLibraryService: LibraryServiceProtocol {
         let matching = tracks.filter { $0.matches(trimmed) }
         return SearchResults(query: trimmed, artists: [], albums: [], tracks: matching, playlists: [])
     }
+
+    // MARK: - On-screen Playlists Discovery (Tweak UI Hook)
+
+    func scanPlaylists() async -> [STCachedPlaylist] {
+        return await MainActor.run {
+            STSpotifyLibraryScanner.scanAndCachePlaylists()
+        }
+    }
+
+    func cachedPlaylists() -> [STCachedPlaylist] {
+        return STLibraryCache.shared.allPlaylists()
+    }
+
+    @MainActor
+    func activatePlaylist(label: String) -> (success: Bool, message: String) {
+        return STSpotifyLibraryScanner.activatePlaylist(label: label)
+    }
+
+    func clearPlaylistCache() {
+        STLibraryCache.shared.clear()
+    }
 }

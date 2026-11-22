@@ -21,12 +21,13 @@ struct STScannedElement {
     }
 }
 
-/// Scans on-screen labelled accessible elements from Spotify's non-overlay windows
-/// and classifies candidates for playlist rows using strict heuristics.
+/// Scans on-screen labelled accessible elements from Spotify's non-overlay windows,
+/// classifies candidates for playlist rows using strict heuristics, and coordinates
+/// with STLibraryCache.
 @MainActor
 final class STSpotifyLibraryScanner {
 
-    /// Registers the `libscan` command into the passed-in registry instance (not .shared).
+    /// Registers the `libscan` and `libclear` commands into the passed-in registry instance (not .shared).
     static func registerCommands(into registry: STExecCommandRegistry) {
         registry.register(STExecCommand(
             name: "libscan",
@@ -34,6 +35,15 @@ final class STSpotifyLibraryScanner {
             help: "dump on-screen labelled elements & classify playlist rows"
         ) { _, _, _ in
             return runScanCommand()
+        })
+
+        registry.register(STExecCommand(
+            name: "libclear",
+            usage: "libclear",
+            help: "clear cached Spotify playlists"
+        ) { _, _, _ in
+            STLibraryCache.shared.clear()
+            return ["> libclear: cleared playlist cache (0 entries)"]
         })
     }
 
@@ -140,17 +150,14 @@ final class STSpotifyLibraryScanner {
         winFrame: CGRect,
         ancestors: [String]
     ) -> (isCandidate: Bool, rule: String?) {
-        // Rule 1: Label length 2..120
         guard label.count >= 2 && label.count <= 120 else {
             return (false, nil)
         }
 
-        // Rule 2: Frame width at least 200pt
         guard winFrame.width >= 200.0 else {
             return (false, nil)
         }
 
-        // Rule 5 (check early): Not a tab-bar or nav-bar item
         let lowerClass = className.lowercased()
         if lowerClass.contains("tabbar") || lowerClass.contains("navigationbar") || lowerClass.contains("navbar") {
             return (false, nil)
@@ -162,7 +169,6 @@ final class STSpotifyLibraryScanner {
             }
         }
 
-        // Rule 3: Inside a scrollable container ancestor
         var scrollAncestor: String? = nil
         var currentParent = view.superview
         while let p = currentParent {
@@ -181,7 +187,6 @@ final class STSpotifyLibraryScanner {
             return (false, nil)
         }
 
-        // Rule 4: Cell-like or button-like element
         let isCellOrControl = (view is UIControl)
             || (view is UICollectionViewCell)
             || (view is UITableViewCell)
@@ -200,10 +205,71 @@ final class STSpotifyLibraryScanner {
         return (true, ruleDesc)
     }
 
+    /// Scans on-screen elements, extracts playlist candidates, merges into cache, and returns all cached items.
+    static func scanAndCachePlaylists() -> [STCachedPlaylist] {
+        let elements = scanOnScreenElements()
+        let candidates = elements.filter { $0.isPlaylistCandidate }
+
+        var discovered: [STCachedPlaylist] = []
+        for c in candidates {
+            let rawLabel = c.label
+            let cleanName: String
+            if let first = rawLabel.components(separatedBy: ",").first?.trimmingCharacters(in: .whitespacesAndNewlines), !first.isEmpty {
+                cleanName = first
+            } else {
+                cleanName = rawLabel
+            }
+            discovered.append(STCachedPlaylist(name: cleanName, label: rawLabel))
+        }
+
+        if !discovered.isEmpty {
+            STLibraryCache.shared.merge(playlists: discovered)
+        }
+
+        return STLibraryCache.shared.allPlaylists()
+    }
+
+    /// Activates an on-screen element with matching label.
+    static func activatePlaylist(label: String) -> (success: Bool, message: String) {
+        let targetLabel = label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let elements = scanOnScreenElements()
+
+        guard let match = elements.first(where: {
+            $0.label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == targetLabel
+        }), let targetView = match.view else {
+            STLog.log("SptTerm: activatePlaylist NOT ON SCREEN: label=\"\(label)\"")
+            return (false, "NOT ON SCREEN - open Spotify Library")
+        }
+
+        let beforeDesc = "[\(match.className)] label=\"\(match.label)\" val=\"\(match.value)\""
+        STLog.log("SptTerm: activatePlaylist BEFORE: \(beforeDesc)")
+
+        var activated = targetView.accessibilityActivate()
+        if !activated, let control = targetView as? UIControl {
+            control.sendActions(for: .touchUpInside)
+            activated = true
+        }
+
+        let afterVal = targetView.accessibilityValue ?? ""
+        STLog.log("SptTerm: activatePlaylist AFTER: activated=\(activated ? 1 : 0) val=\"\(afterVal)\"")
+        return (true, "ACTIVATED")
+    }
+
     /// Executes `libscan` command logic.
     static func runScanCommand() -> [String] {
         let elements = scanOnScreenElements()
         let candidates = elements.filter { $0.isPlaylistCandidate }
+
+        // Also merge discovered playlist candidates into cache
+        var discovered: [STCachedPlaylist] = []
+        for c in candidates {
+            let rawLabel = c.label
+            let cleanName = rawLabel.components(separatedBy: ",").first?.trimmingCharacters(in: .whitespacesAndNewlines) ?? rawLabel
+            discovered.append(STCachedPlaylist(name: cleanName.isEmpty ? rawLabel : cleanName, label: rawLabel))
+        }
+        if !discovered.isEmpty {
+            STLibraryCache.shared.merge(playlists: discovered)
+        }
 
         var lines: [String] = [
             "> libscan: scanned \(elements.count) element(s), \(candidates.count) playlist candidate(s):"
