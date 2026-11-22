@@ -19,7 +19,12 @@ __attribute__((used)) static const char * const kSptTermRequiredStrings[] = {
     "hitch",
     "lyrics: off",
     "libscan",
-    "PLAYLISTS"
+    "PLAYLISTS",
+    "libtap",
+    "trktap",
+    "libscan all",
+    "skipped kind",
+    "TRACKS IN OPENED PLAYLIST"
 };
 
 __attribute__((constructor))
