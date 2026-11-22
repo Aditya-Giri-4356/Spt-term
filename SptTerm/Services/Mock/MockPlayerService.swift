@@ -190,7 +190,13 @@ final class MockPlayerService: PlayerServiceProtocol {
     }
 
     func sendRawCommand(_ command: UInt32) {
-        STLog.log("MockPlayerService: sendRawCommand(\(command))")
+        _ = sendRawCommand(command, options: nil)
+    }
+
+    @discardableResult
+    func sendRawCommand(_ command: UInt32, options: [String: Any]?) -> Bool {
+        STLog.log("MockPlayerService: sendRawCommand(\(command), options: \(options ?? [:]))")
+        return true
     }
 
     func setVolume(_ value: Double) {

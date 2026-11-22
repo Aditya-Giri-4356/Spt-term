@@ -206,8 +206,13 @@ final class STInProcessPlayerService: NSObject, PlayerServiceProtocol {
     }
 
     func sendRawCommand(_ command: UInt32) {
-        STLog.log("SptTerm: raw MRMediaRemoteSendCommand(\(command)) dispatched via EXEC")
-        STMediaRemoteModeLadder.sendMRCommand(command)
+        _ = sendRawCommand(command, options: nil)
+    }
+
+    @discardableResult
+    func sendRawCommand(_ command: UInt32, options: [String: Any]?) -> Bool {
+        STLog.log("SptTerm: raw MRMediaRemoteSendCommand(\(command), options: \(options ?? [:])) dispatched")
+        return STMediaRemoteModeLadder.sendMRCommand(command, options: options)
     }
 
     func play() {

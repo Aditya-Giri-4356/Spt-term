@@ -39,7 +39,9 @@
 		278D05DD1E4DDBC255E97462 /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC6BA49292514C42CEC5B87 /* PlaylistDetailView.swift */; };
 		299410456BF2B5688FEA60F7 /* NowPlayingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7B92B66D90717717A43588 /* NowPlayingViewModel.swift */; };
 		2D43CCB7713B3FA2FBAE748E /* PlayerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F1B51EC637E88B08DD970C /* PlayerState.swift */; };
+		2E4FABD11D23920A46912A31 /* STExecCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA8437418040A15A129D5386 /* STExecCommands.swift */; };
 		2FFE697E32DB88A57D323039 /* Radii.swift in Sources */ = {isa = PBXBuildFile; fileRef = A37D2BDABB1F3AB632A513B5 /* Radii.swift */; };
+		30C44FF75BE1C7621C511FCB /* STExecCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA8437418040A15A129D5386 /* STExecCommands.swift */; };
 		3109569DED7A3791B6B41FA2 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFA3822A21C1AFC6ECDEFB6E /* Typography.swift */; };
 		3119160604AF74DBB2156B7A /* PhosphorGlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6F27BA6167E4AA2EFE5F05 /* PhosphorGlow.swift */; };
 		323F1544BD151EDAE8C1E660 /* AlbumDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CFE2C4378C52488F8CB7555 /* AlbumDetailViewModel.swift */; };
@@ -108,6 +110,7 @@
 		84A924967C9916B835ECE860 /* AlbumDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3253ABDD9D78EA98B987B72C /* AlbumDetailView.swift */; };
 		85DE623388CDED59E4BC12E4 /* SptTermApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 514E08E4737768CF37C59599 /* SptTermApp.swift */; };
 		86C1666C59607952F8FB4473 /* MockAudioEffectsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 992A9868B2293699E90E7AD7 /* MockAudioEffectsService.swift */; };
+		872558FBBF1F1715FC336B49 /* STSleepTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715FCF3FC8A237A03AAAD290 /* STSleepTimer.swift */; };
 		87BC29EC0B38C65DA769C2B7 /* STTweakWindowHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = 384EB8DBD7EC432DC659ED92 /* STTweakWindowHost.swift */; };
 		8A5B9438B8B486E783FEA0C1 /* BentoCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56E858DD4B1D871D21FC28DA /* BentoCard.swift */; };
 		8BADC5B22D589EAFB932041B /* TabItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EAD7B6AC1C7B91C60FC6E84 /* TabItem.swift */; };
@@ -167,6 +170,7 @@
 		D0EB52D4B7B6C8E9F128A20A /* DetailPlaceholderDestinations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 705088F4B3F585AA892268C1 /* DetailPlaceholderDestinations.swift */; };
 		D1C5DD69AC20FDBD126B6310 /* LibraryShellContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5475E9A73E280FE257C4D2F /* LibraryShellContent.swift */; };
 		D1DD9B3685127AC6F2C3E068 /* NowPlayingMetadataPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E11BAC18DD8E1B91675FBFEF /* NowPlayingMetadataPanel.swift */; };
+		D387508113E1282DEADD9EA7 /* STSleepTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 715FCF3FC8A237A03AAAD290 /* STSleepTimer.swift */; };
 		D7AEACF1C420BEDB6E85AFC9 /* SpectrumBars.swift in Sources */ = {isa = PBXBuildFile; fileRef = C88A3D833FE8630737FA2E1A /* SpectrumBars.swift */; };
 		D7F834FB88918EDB995C4861 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBAEC9F0BECDC2804D5A14A /* Haptics.swift */; };
 		D906338541F15FC4B3C45250 /* NowPlayingTransportPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF034FACBBF6AD35DB7BD66 /* NowPlayingTransportPanel.swift */; };
@@ -246,6 +250,7 @@
 		6E4FDB793E436E378DCB0D9A /* STTweakEntry.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = STTweakEntry.m; sourceTree = "<group>"; };
 		701698A7F17E158776E4F032 /* Formatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatting.swift; sourceTree = "<group>"; };
 		705088F4B3F585AA892268C1 /* DetailPlaceholderDestinations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailPlaceholderDestinations.swift; sourceTree = "<group>"; };
+		715FCF3FC8A237A03AAAD290 /* STSleepTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSleepTimer.swift; sourceTree = "<group>"; };
 		7E7B92B66D90717717A43588 /* NowPlayingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingViewModel.swift; sourceTree = "<group>"; };
 		87B0854EB91818DF6B786C54 /* STKeychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STKeychain.swift; sourceTree = "<group>"; };
 		87FAD6D4FBF56EDE26C620E8 /* SearchShellContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchShellContent.swift; sourceTree = "<group>"; };
@@ -286,6 +291,7 @@
 		D388FDC1490A64CD4C654911 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		D5475E9A73E280FE257C4D2F /* LibraryShellContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryShellContent.swift; sourceTree = "<group>"; };
 		D66DB67E7A546519EE037F55 /* STSpotifyDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyDTOs.swift; sourceTree = "<group>"; };
+		DA8437418040A15A129D5386 /* STExecCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STExecCommands.swift; sourceTree = "<group>"; };
 		DC83705B6B27AA50FE253FAA /* TerminalType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalType.swift; sourceTree = "<group>"; };
 		E0B7676F1C95F47008D2FB72 /* TerminalHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalHeader.swift; sourceTree = "<group>"; };
 		E11BAC18DD8E1B91675FBFEF /* NowPlayingMetadataPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetadataPanel.swift; sourceTree = "<group>"; };
@@ -518,6 +524,7 @@
 				57CC6091EE4F6DBFCE2243D4 /* RootView.swift */,
 				87FAD6D4FBF56EDE26C620E8 /* SearchShellContent.swift */,
 				BE3592AE0EB4C00174571527 /* ShellMetrics.swift */,
+				DA8437418040A15A129D5386 /* STExecCommands.swift */,
 				2388B90E28AAED915368F551 /* STRootGate.swift */,
 				4EAD7B6AC1C7B91C60FC6E84 /* TabItem.swift */,
 				FEBD18A3317524AF011B5728 /* TemporaryPlaceholders.swift */,
@@ -557,6 +564,7 @@
 				98A7C80CCE5DA0AA29C6B740 /* PlayerServiceProtocol.swift */,
 				D26CCE8F5AF1FDB61918AB10 /* STAuthServiceProtocol.swift */,
 				91417895E82AE66CCDDF4208 /* STLog.swift */,
+				715FCF3FC8A237A03AAAD290 /* STSleepTimer.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -735,6 +743,7 @@
 				9EAA2585B645642EB548B157 /* Route.swift in Sources */,
 				1302A48F83EBAA396786EE4D /* STAuthServiceProtocol.swift in Sources */,
 				FED994E817DE4A51AB0E11A6 /* STClamping.swift in Sources */,
+				30C44FF75BE1C7621C511FCB /* STExecCommands.swift in Sources */,
 				7A276235175CE31C2B074696 /* STKeychain.swift in Sources */,
 				57CEAD3B7AC10915B1186D35 /* STLog.swift in Sources */,
 				A17D8BE2E766FA2A00BD39D2 /* STPKCE.swift in Sources */,
@@ -742,6 +751,7 @@
 				6065B66D40A53F209EADF749 /* STRemoteArtworkService.swift in Sources */,
 				8D4B8372B7B87BCFC5D70CB7 /* STRemotePlayerService.swift in Sources */,
 				FCF94309F75BAA4ED2D1CA94 /* STRootGate.swift in Sources */,
+				872558FBBF1F1715FC336B49 /* STSleepTimer.swift in Sources */,
 				A12549E35D9BECE0ADE24CB7 /* STSpotifyAuth.swift in Sources */,
 				4611774B14B3C923DD8A9D07 /* STSpotifyConfig.swift in Sources */,
 				57CF402035696E858AE3236B /* STSpotifyDTOs.swift in Sources */,
@@ -838,12 +848,14 @@
 				FFAA50ABA22BC629F61781BF /* Route.swift in Sources */,
 				428B8C9E5C1C8EBF48459F39 /* STAudioTweaksService.swift in Sources */,
 				375DC1B77CEF86B377EA093C /* STAuthServiceProtocol.swift in Sources */,
+				2E4FABD11D23920A46912A31 /* STExecCommands.swift in Sources */,
 				6DEFB466EE5DDB44E9052A42 /* STInProcessArtworkService.swift in Sources */,
 				0E09B83EBF72708B60A55ADB /* STInProcessPlayerService.swift in Sources */,
 				949C773F2EDE7879C63D24B0 /* STLog.swift in Sources */,
 				6AB3BE90E2C485CCF4E3457C /* STMediaRemoteModeLadder.swift in Sources */,
 				4B6EE8CAAADA93CE3FAD671F /* STRootGate.swift in Sources */,
 				9FFD7E7E8903252AA27572A1 /* STSessionLibraryService.swift in Sources */,
+				D387508113E1282DEADD9EA7 /* STSleepTimer.swift in Sources */,
 				61E0F6E3364360A06C523DB8 /* STSpotifyDTOs.swift in Sources */,
 				9081ABC71A9735B2D776615F /* STTweakEntry.m in Sources */,
 				87BC29EC0B38C65DA769C2B7 /* STTweakWindowHost.swift in Sources */,

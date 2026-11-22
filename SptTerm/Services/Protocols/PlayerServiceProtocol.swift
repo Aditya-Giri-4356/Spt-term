@@ -24,6 +24,8 @@ protocol PlayerServiceProtocol: AnyObject {
     func toggleShuffle()
     func setShuffle(_ enabled: Bool)
     func sendRawCommand(_ command: UInt32)
+    @discardableResult
+    func sendRawCommand(_ command: UInt32, options: [String: Any]?) -> Bool
     func setVolume(_ value: Double)
     func openURI(_ uri: String)
 }
@@ -36,6 +38,12 @@ extension PlayerServiceProtocol {
     }
 
     func sendRawCommand(_ command: UInt32) {
+        _ = sendRawCommand(command, options: nil)
+    }
+
+    @discardableResult
+    func sendRawCommand(_ command: UInt32, options: [String: Any]?) -> Bool {
         STLog.log("SptTerm: sendRawCommand(\(command)) default no-op")
+        return false
     }
 }

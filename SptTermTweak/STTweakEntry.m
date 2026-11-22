@@ -7,7 +7,14 @@ __attribute__((used)) static const char * const kSptTermRequiredStrings[] = {
     "SHUFFLE N/A",
     "SHUFFLE (UNVERIFIED)",
     "SEEK N/A",
-    "log copy"
+    "log copy",
+    "waiting for read-back",
+    "manual raw command",
+    "uihook",
+    "strategies",
+    "no candidates",
+    "hitch",
+    "lyrics: off"
 };
 
 __attribute__((constructor))

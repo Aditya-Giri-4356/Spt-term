@@ -15,7 +15,7 @@ final class STLog {
 
     private var buffer: [String] = []
     private let lock = NSLock()
-    private let maxCapacity = 200
+    private let maxCapacity = 600
 
     static func log(_ message: String) {
         shared.append(message)
@@ -44,8 +44,36 @@ final class STLog {
         return buffer
     }
 
+    func clear() {
+        lock.lock()
+        defer { lock.unlock() }
+        buffer.removeAll()
+    }
+
+    func grep(_ pattern: String) -> [String] {
+        guard !pattern.isEmpty else { return [] }
+        lock.lock()
+        defer { lock.unlock() }
+        let needle = pattern.lowercased()
+        return buffer.filter { $0.lowercased().contains(needle) }
+    }
+
+    static func sanitizeUserIDs(_ text: String) -> String {
+        var result = text.replacingOccurrences(
+            of: "spotify:user:[a-zA-Z0-9_\\-\\.]+",
+            with: "spotify:user:XXXX",
+            options: .regularExpression
+        )
+        result = result.replacingOccurrences(
+            of: "/users/[a-zA-Z0-9_\\-\\.]+",
+            with: "/users/XXXX",
+            options: .regularExpression
+        )
+        return result
+    }
+
     func copyToPasteboard() {
-        let text = allLines().joined(separator: "\n")
+        let text = Self.sanitizeUserIDs(allLines().joined(separator: "\n"))
         #if canImport(UIKit)
         DispatchQueue.main.async {
             UIPasteboard.general.string = text

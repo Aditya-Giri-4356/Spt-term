@@ -103,6 +103,7 @@ final class ServiceEnvironment: ObservableObject {
         self.artwork = artwork
         self.legacyContainer = legacyContainer
         self.isAuthorized = auth.isAuthorized
+        STSleepTimer.shared.setup(player: player)
 
         auth.authorizedPublisher
             .receive(on: RunLoop.main)
