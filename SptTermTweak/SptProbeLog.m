@@ -296,6 +296,7 @@ int spt_probe_run(const char *experimentId) {
 @implementation SptProbeBootstrap
 
 + (void)load {
+    spt_probe_net_early_install();
     static dispatch_once_t s_initOnce;
     void (^installBlock)(void) = ^{
         dispatch_once(&s_initOnce, ^{
@@ -306,7 +307,7 @@ int spt_probe_run(const char *experimentId) {
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification
                                                       object:nil
                                                        queue:[NSOperationQueue mainQueue]
-                                                  usingBlock:^(NSNotification * _Nonnull note) {
+                                                  usingBlock:^(NSNotification * _Nonnull __unused note) {
         installBlock();
     }];
     
