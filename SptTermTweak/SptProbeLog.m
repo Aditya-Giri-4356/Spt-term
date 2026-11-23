@@ -277,6 +277,9 @@ int spt_probe_run(const char *experimentId) {
     if (strcmp(experimentId, "A") == 0) {
         spt_probe_classes_run();
         return 0;
+    } else if (strcmp(experimentId, "B") == 0) {
+        spt_probe_heap_run();
+        return 0;
     } else if (strcmp(experimentId, "D") == 0) {
         spt_probe_files_run();
         return 0;
@@ -286,8 +289,13 @@ int spt_probe_run(const char *experimentId) {
     } else if (strcmp(experimentId, "G") == 0) {
         spt_probe_cache_run();
         return 0;
-    } else if (strcmp(experimentId, "B") == 0 ||
-               strcmp(experimentId, "C") == 0 ||
+    } else if (strcmp(experimentId, "H") == 0) {
+        spt_probe_ldb_run();
+        return 0;
+    } else if (strcmp(experimentId, "I") == 0) {
+        spt_probe_types_run();
+        return 0;
+    } else if (strcmp(experimentId, "C") == 0 ||
                strcmp(experimentId, "F") == 0) {
         spt_probe_log(experimentId, "experiment %s not built yet", experimentId);
         return -1;

@@ -96,11 +96,15 @@ NSString *spt_probe_norm_path(NSString * _Nullable path) {
     static NSCharacterSet *s_invAlnum = nil;
     static NSCharacterSet *s_invHex = nil;
     static NSCharacterSet *s_invDigits = nil;
+    static NSCharacterSet *s_invLowerAlnum = nil;
+    static NSCharacterSet *s_digits = nil;
     static dispatch_once_t s_csetOnce;
     dispatch_once(&s_csetOnce, ^{
         s_invAlnum = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"] invertedSet];
         s_invHex = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF"] invertedSet];
         s_invDigits = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789"] invertedSet];
+        s_invLowerAlnum = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefghijklmnopqrstuvwxyz"] invertedSet];
+        s_digits = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
     });
     
     NSArray<NSString *> *parts = [path componentsSeparatedByString:@"/"];
@@ -140,6 +144,10 @@ NSString *spt_probe_norm_path(NSString * _Nullable path) {
         }
         if (s.length > 40) {
             [norm addObject:@"{long}"];
+            continue;
+        }
+        if (s.length >= 20 && s.length <= 40 && [s rangeOfCharacterFromSet:s_invLowerAlnum].location == NSNotFound && [s rangeOfCharacterFromSet:s_digits].location != NSNotFound) {
+            [norm addObject:@"{id}"];
             continue;
         }
         [norm addObject:s];
