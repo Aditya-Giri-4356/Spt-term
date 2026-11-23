@@ -34,6 +34,8 @@ void spt_probe_export_redacted_log(void);
 int spt_probe_run(const char *experimentId);
 void spt_probe_files_run(void);
 void spt_probe_net_run(void);
+void spt_probe_cache_run(void);
+void spt_probe_classes_run(void);
 void spt_probe_net_install(void);
 void spt_probe_net_early_install(void);
 NSString *spt_probe_norm_path(NSString * _Nullable path);
@@ -52,6 +54,8 @@ static inline void spt_probe_log_str(const char *section, const char *message) {
 static inline void spt_probe_wipe_log(void) {}
 static inline void spt_probe_export_redacted_log(void) {}
 static inline int spt_probe_run(const char *experimentId) { (void)experimentId; return -1; }
+static inline void spt_probe_cache_run(void) {}
+static inline void spt_probe_classes_run(void) {}
 static inline void spt_probe_net_early_install(void) {}
 static inline NSString *spt_probe_norm_path(NSString * _Nullable path) { return path ?: @"/"; }
 

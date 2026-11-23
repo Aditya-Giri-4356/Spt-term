@@ -30,7 +30,7 @@ public struct ProbePanel: View {
 
             if !collapsed {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 4) {
-                    ForEach(["A", "B", "C", "D", "E", "F"], id: \.self) { exp in
+                    ForEach(["A", "B", "C", "D", "E", "F", "G"], id: \.self) { exp in
                         Button("Exp \(exp)") {
                             _ = spt_probe_run(exp)
                         }

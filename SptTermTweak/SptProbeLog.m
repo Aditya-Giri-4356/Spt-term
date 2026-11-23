@@ -274,14 +274,19 @@ int spt_probe_run(const char *experimentId) {
     }
     spt_probe_log_sys_header();
     
-    if (strcmp(experimentId, "D") == 0) {
+    if (strcmp(experimentId, "A") == 0) {
+        spt_probe_classes_run();
+        return 0;
+    } else if (strcmp(experimentId, "D") == 0) {
         spt_probe_files_run();
         return 0;
     } else if (strcmp(experimentId, "E") == 0) {
         spt_probe_net_run();
         return 0;
-    } else if (strcmp(experimentId, "A") == 0 ||
-               strcmp(experimentId, "B") == 0 ||
+    } else if (strcmp(experimentId, "G") == 0) {
+        spt_probe_cache_run();
+        return 0;
+    } else if (strcmp(experimentId, "B") == 0 ||
                strcmp(experimentId, "C") == 0 ||
                strcmp(experimentId, "F") == 0) {
         spt_probe_log(experimentId, "experiment %s not built yet", experimentId);

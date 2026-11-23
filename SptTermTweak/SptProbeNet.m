@@ -17,6 +17,7 @@
 @property (nonatomic, copy) NSString *method;
 @property (nonatomic, copy) NSString *host;
 @property (nonatomic, copy) NSString *path;
+@property (nonatomic, copy) NSString *delegateClass;
 @end
 
 @implementation SptProbePathEntry
@@ -36,6 +37,7 @@ static NSMutableSet<NSValue *> *s_hooked;
 static NSMutableDictionary<NSString *, SptProbePathEntry *> *s_pathHistogram;
 static NSMutableSet<NSString *> *s_sessionKeys;
 static NSMutableArray<NSString *> *s_sessionLines;
+static NSMutableDictionary<NSValue *, NSString *> *s_sessionDelegateCache;
 
 static void spt_make_net_key(void) {
     pthread_key_create(&s_netKey, NULL);
@@ -50,6 +52,7 @@ static void spt_ensure_net_init(void) {
     if (!s_pathHistogram) { s_pathHistogram = [NSMutableDictionary new]; }
     if (!s_sessionKeys) { s_sessionKeys = [NSMutableSet new]; }
     if (!s_sessionLines) { s_sessionLines = [NSMutableArray new]; }
+    if (!s_sessionDelegateCache) { s_sessionDelegateCache = [NSMutableDictionary new]; }
 }
 
 static void spt_bump(NSMutableDictionary<NSString *, NSNumber *> *d, NSString *k) {
@@ -114,7 +117,7 @@ NSString *spt_probe_norm_path(NSString * _Nullable path) {
             continue;
         }
         NSString *lower = [s lowercaseString];
-        if ([lower isEqualToString:@"user"] || [lower isEqualToString:@"users"]) {
+        if ([lower isEqualToString:@"user"] || [lower isEqualToString:@"users"] || [lower isEqualToString:@"username"]) {
             prevIsUser = YES;
             [norm addObject:s];
             continue;
@@ -145,13 +148,13 @@ NSString *spt_probe_norm_path(NSString * _Nullable path) {
     return res.length > 0 ? res : @"/";
 }
 
-static void spt_probe_discover_session(NSURLSessionTask *task) {
+static NSURLSession *spt_get_session_for_task(NSURLSessionTask *task, BOOL *outHasSel, BOOL *outHasIvar) {
     NSURLSession *session = nil;
-    BOOL hasSessionSel = NO;
-    BOOL hasSessionIvar = NO;
+    BOOL hasSel = NO;
+    BOOL hasIvar = NO;
     @try {
         if ([task respondsToSelector:@selector(session)]) {
-            hasSessionSel = YES;
+            hasSel = YES;
             session = [task performSelector:@selector(session)];
         }
     } @catch (NSException *e) {}
@@ -164,11 +167,41 @@ static void spt_probe_discover_session(NSURLSessionTask *task) {
         @try {
             Ivar ivar = class_getInstanceVariable(object_getClass(task), "_session");
             if (ivar) {
-                hasSessionIvar = YES;
+                hasIvar = YES;
                 session = object_getIvar(task, ivar);
             }
         } @catch (NSException *e) {}
     }
+    if (outHasSel) *outHasSel = hasSel;
+    if (outHasIvar) *outHasIvar = hasIvar;
+    return session;
+}
+
+static NSString *spt_get_session_delegate_class(NSURLSession *session) {
+    if (!session) {
+        return @"(no-session)";
+    }
+    NSValue *key = [NSValue valueWithPointer:(__bridge const void *)session];
+    os_unfair_lock_lock(&s_netLock);
+    spt_ensure_net_init();
+    NSString *cached = s_sessionDelegateCache[key];
+    os_unfair_lock_unlock(&s_netLock);
+    if (cached) {
+        return cached;
+    }
+    
+    id delegate = nil;
+    @try { delegate = session.delegate; } @catch (NSException *e) {}
+    Class delCls = delegate ? object_getClass(delegate) : Nil;
+    NSString *delClsName = delCls ? NSStringFromClass(delCls) : @"(nil)";
+    
+    os_unfair_lock_lock(&s_netLock);
+    s_sessionDelegateCache[key] = delClsName;
+    os_unfair_lock_unlock(&s_netLock);
+    return delClsName;
+}
+
+static void spt_probe_discover_session(NSURLSessionTask * __unused task, NSURLSession *session, BOOL hasSessionSel, BOOL hasSessionIvar) {
     if (!session) {
         static dispatch_once_t s_sessionUnavailOnce;
         dispatch_once(&s_sessionUnavailOnce, ^{
@@ -270,8 +303,13 @@ static void spt_record_task(NSURLSessionTask *task) {
     NSString *normPath = spt_probe_norm_path(url.path ?: @"/");
     NSString *keys = [(req.allHTTPHeaderFields.allKeys ?: @[]) componentsJoinedByString:@", "];
     
+    BOOL hasSel = NO;
+    BOOL hasIvar = NO;
+    NSURLSession *session = spt_get_session_for_task(task, &hasSel, &hasIvar);
+    NSString *delClsName = spt_get_session_delegate_class(session);
+    
     double nowOffset = (s_installTime > 0.0) ? (CACurrentMediaTime() - s_installTime) : 0.0;
-    NSString *histKey = [NSString stringWithFormat:@"%@ %@ %@", method, host, normPath];
+    NSString *histKey = [NSString stringWithFormat:@"%@ %@ %@ %@", method, host, normPath, delClsName];
     
     os_unfair_lock_lock(&s_netLock);
     spt_ensure_net_init();
@@ -290,6 +328,7 @@ static void spt_record_task(NSURLSessionTask *task) {
             entry.method = method;
             entry.host = host;
             entry.path = normPath;
+            entry.delegateClass = delClsName;
             s_pathHistogram[histKey] = entry;
         } else {
             entry = s_pathHistogram[@"(overflow)"];
@@ -301,6 +340,7 @@ static void spt_record_task(NSURLSessionTask *task) {
                 entry.method = @"";
                 entry.host = @"";
                 entry.path = @"(overflow)";
+                entry.delegateClass = @"";
                 s_pathHistogram[@"(overflow)"] = entry;
             } else {
                 entry.count += 1;
@@ -316,12 +356,12 @@ static void spt_record_task(NSURLSessionTask *task) {
     if (firstOfClass) {
         spt_probe_log("E", "first task of class %s", cls.UTF8String);
     }
-    spt_probe_log("E", "%s %s://%s%s [headers: %s] (%s)",
+    spt_probe_log("E", "%s %s://%s%s [headers: %s] (%s) d=%s",
                   method.UTF8String, (url.scheme ?: @"").UTF8String,
-                  host.UTF8String, (url.path ?: @"/").UTF8String,
-                  keys.UTF8String, cls.UTF8String);
+                  host.UTF8String, normPath.UTF8String,
+                  keys.UTF8String, cls.UTF8String, delClsName.UTF8String);
     
-    spt_probe_discover_session(task);
+    spt_probe_discover_session(task, session, hasSel, hasIvar);
 }
 
 static void spt_hook_resume(Class cls) {
@@ -487,9 +527,10 @@ void spt_probe_net_run(void) {
         NSInteger topCount = MIN((NSInteger)sortedByCount.count, 40);
         for (NSInteger i = 0; i < topCount; i++) {
             SptProbePathEntry *e = sortedByCount[i];
-            spt_probe_log("E", "%ld %s %s %s first=+%.1fs last=+%.1fs",
+            spt_probe_log("E", "%ld %s %s %s first=+%.1fs last=+%.1fs d=%s",
                           (long)e.count, e.method.UTF8String, e.host.UTF8String,
-                          e.path.UTF8String, e.firstOffset, e.lastOffset);
+                          e.path.UTF8String, e.firstOffset, e.lastOffset,
+                          (e.delegateClass ?: @"(none)").UTF8String);
         }
         
         NSMutableArray<SptProbePathEntry *> *nonImage = [NSMutableArray new];
@@ -514,9 +555,10 @@ void spt_probe_net_run(void) {
         NSInteger nonImageCount = MIN((NSInteger)nonImage.count, 150);
         for (NSInteger i = 0; i < nonImageCount; i++) {
             SptProbePathEntry *e = nonImage[i];
-            spt_probe_log("E", "%ld %s %s %s first=+%.1fs last=+%.1fs",
+            spt_probe_log("E", "%ld %s %s %s first=+%.1fs last=+%.1fs d=%s",
                           (long)e.count, e.method.UTF8String, e.host.UTF8String,
-                          e.path.UTF8String, e.firstOffset, e.lastOffset);
+                          e.path.UTF8String, e.firstOffset, e.lastOffset,
+                          (e.delegateClass ?: @"(none)").UTF8String);
         }
         
         for (NSString *line in sessionLines) {
