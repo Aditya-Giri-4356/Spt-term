@@ -73,6 +73,15 @@ struct STTweakTerminalRootView: View {
         ZStack(alignment: .topTrailing) {
             STRootGate()
 
+            #if SPT_PROBE
+            VStack {
+                Spacer()
+                ProbePanel()
+            }
+            .padding(.bottom, 60)
+            .padding(.horizontal, 8)
+            #endif
+
             // CRT styled minimize button in top bar
             Button(action: {
                 TermHaptic.tap()

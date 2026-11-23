@@ -55,6 +55,7 @@ targets:
         MACH_O_TYPE: mh_dylib
         LD_DYLIB_INSTALL_NAME: "@executable_path/SptTermTweak.dylib"
         SWIFT_VERSION: "5.0"
+        SWIFT_OBJC_BRIDGING_HEADER: SptTermTweak/SptTermTweak-Bridging-Header.h
         CODE_SIGNING_ALLOWED: NO
         CODE_SIGNING_REQUIRED: NO
         SKIP_INSTALL: NO
@@ -67,3 +68,5 @@ targets:
           - "AVFoundation"
           - "-framework"
           - "MediaPlayer"
+          - "-framework"
+          - "Security"

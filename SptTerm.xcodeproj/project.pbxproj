@@ -39,6 +39,7 @@
 		1EA42C0F5FFA3B14FC0EC369 /* PlayerServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A7C80CCE5DA0AA29C6B740 /* PlayerServiceProtocol.swift */; };
 		1ED58AA25FA2C33460ACE603 /* STSpotifyWebAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB3FDD189DC512C050672601 /* STSpotifyWebAPI.swift */; };
 		1F2CFDC3764ECF95C06A7402 /* TermColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 088566ABCB05F82C2B4BFA4D /* TermColor.swift */; };
+		24BE5EBD47A5DDBF8E88F82C /* SptProbeLog.m in Sources */ = {isa = PBXBuildFile; fileRef = ECE283BC99F053E7F1E454AC /* SptProbeLog.m */; };
 		25DF2F0FC76D2615B4A52D30 /* STOpenedPlaylistTracksSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ADB8A9AB4CD1BF8B189C0A4 /* STOpenedPlaylistTracksSection.swift */; };
 		278D05DD1E4DDBC255E97462 /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AC6BA49292514C42CEC5B87 /* PlaylistDetailView.swift */; };
 		299410456BF2B5688FEA60F7 /* NowPlayingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7B92B66D90717717A43588 /* NowPlayingViewModel.swift */; };
@@ -85,6 +86,7 @@
 		5BAAB4A5E20B94E71CBC2ED9 /* TemporaryPlaceholders.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEBD18A3317524AF011B5728 /* TemporaryPlaceholders.swift */; };
 		5BF3E38BBAE81DDA72487F68 /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC2C1648466996E5A9A89EC1 /* AppRoute.swift */; };
 		5C4F78AEFA6B1ED8958C6B7E /* NowPlayingTransportPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF034FACBBF6AD35DB7BD66 /* NowPlayingTransportPanel.swift */; };
+		5CB035EBC133C777F0846F45 /* ProbeUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE2680294B8453F5DA10231A /* ProbeUI.swift */; };
 		5E977741E22D7B6CDC774C82 /* STSpotifyUIHook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E187375E3F959BED46414B3 /* STSpotifyUIHook.swift */; };
 		5F2DC9646AFE116304D15469 /* MockAudioEffectsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 992A9868B2293699E90E7AD7 /* MockAudioEffectsService.swift */; };
 		60228C29023FAAF026584F49 /* ASCIIRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42BD735FAFDE120435103B1 /* ASCIIRule.swift */; };
@@ -168,6 +170,7 @@
 		A91C9769E44D5540906E2949 /* PhosphorGlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6F27BA6167E4AA2EFE5F05 /* PhosphorGlow.swift */; };
 		A93730766B1E1304C36E37C8 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D861C46E9137DF56C7033AF /* HomeViewModel.swift */; };
 		A93BD3F8A29BE39A1D931552 /* PreviewSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65194DCCD7574A5B17EC1802 /* PreviewSupport.swift */; };
+		AAFA6A5BE2975D40A59BED05 /* SptProbeFiles.m in Sources */ = {isa = PBXBuildFile; fileRef = B89414773FA577562DCA1E0B /* SptProbeFiles.m */; };
 		ABDE72FDEECF08012C548DBE /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBAEC9F0BECDC2804D5A14A /* Haptics.swift */; };
 		AE72AF0B24873A9B1DDDBE71 /* NowPlayingLyricsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E8A1F8AF055124E090AEA9 /* NowPlayingLyricsPanel.swift */; };
 		B162D4A65E5E387CAA8E362A /* ThemeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0EC1632BFC21A58121CAD3 /* ThemeCatalog.swift */; };
@@ -200,15 +203,19 @@
 		D7F834FB88918EDB995C4861 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBAEC9F0BECDC2804D5A14A /* Haptics.swift */; };
 		D906338541F15FC4B3C45250 /* NowPlayingTransportPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DF034FACBBF6AD35DB7BD66 /* NowPlayingTransportPanel.swift */; };
 		D9A45E74E7866C84F693216B /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F78D2FCE9F59F55783F669C5 /* SearchView.swift */; };
+		DC7D309F44D442601F0D8B34 /* SptProbe.h in Headers */ = {isa = PBXBuildFile; fileRef = E098B3D1A08B567813390C9C /* SptProbe.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DEB136EBD4D0A30E692B885D /* PlayerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F1B51EC637E88B08DD970C /* PlayerState.swift */; };
 		DECC8C4B01EE03AA450CD8B7 /* MockPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BBE515CDFD2B0A30B69D390 /* MockPlayerService.swift */; };
 		E0D845F531E4579A09097774 /* STMRStateDump.swift in Sources */ = {isa = PBXBuildFile; fileRef = F06BDA012DED1C50A91BCE7E /* STMRStateDump.swift */; };
 		E1C725AC6BD93401F159E890 /* Album.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FD8E1121314FE217A2ABE5 /* Album.swift */; };
+		E3BC95734558B41A50C9911A /* SptTermTweak-Bridging-Header.h in Headers */ = {isa = PBXBuildFile; fileRef = ABAA9280630C3C3239B6CFAA /* SptTermTweak-Bridging-Header.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E405A61618750B21E047A6D8 /* ASCIIPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F89766216FBA6286A5E74F6B /* ASCIIPanel.swift */; };
 		E54F362C4C78046DAA9C3632 /* TerminalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC83705B6B27AA50FE253FAA /* TerminalType.swift */; };
 		E813C4803D88DA67C833BCCA /* ASCIIArtworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A520CBA75C770B5AA69ABFA /* ASCIIArtworkView.swift */; };
+		EA57BC655C2A1BAFEA56D4B4 /* SptProbeNet.m in Sources */ = {isa = PBXBuildFile; fileRef = 5CD3D155B903C1BCE8C11E54 /* SptProbeNet.m */; };
 		EB64AC07D72052AE1A9C6ABF /* STLibraryBatchScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0AC41CC57B95BAD512F87BA /* STLibraryBatchScanner.swift */; };
 		EC21AB89D9086528BCAA37EC /* NowPlayingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B779E9EB75DC049B0729ECF /* NowPlayingView.swift */; };
+		EC89BAC3EE9A6540FD84AE45 /* ProbeHooks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6480BD01F9BD45BEE08B4771 /* ProbeHooks.swift */; };
 		ED151C704247F72AE5F72043 /* PlaylistDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693EBA4D75BAD2BB2886253F /* PlaylistDetailViewModel.swift */; };
 		EDB18BFEF47380BA997113AE /* TerminalType.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC83705B6B27AA50FE253FAA /* TerminalType.swift */; };
 		EE40BA5C64F871B683ED2361 /* NowPlayingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7B92B66D90717717A43588 /* NowPlayingViewModel.swift */; };
@@ -277,6 +284,7 @@
 		57CC6091EE4F6DBFCE2243D4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		5ADB8A9AB4CD1BF8B189C0A4 /* STOpenedPlaylistTracksSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STOpenedPlaylistTracksSection.swift; sourceTree = "<group>"; };
 		5B05B3DD781D660F9B414582 /* MockCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockCatalog.swift; sourceTree = "<group>"; };
+		5CD3D155B903C1BCE8C11E54 /* SptProbeNet.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SptProbeNet.m; sourceTree = "<group>"; };
 		5CFE2C4378C52488F8CB7555 /* AlbumDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumDetailViewModel.swift; sourceTree = "<group>"; };
 		5E3CD437BFD8A639A8C60CB5 /* RootView_Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView_Previews.swift; sourceTree = "<group>"; };
 		5EC18EB24F6E69BD5262EC1E /* STSpotifyConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyConfig.swift; sourceTree = "<group>"; };
@@ -284,6 +292,7 @@
 		61926B1B359DFBA44796F9C2 /* TerminalTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTheme.swift; sourceTree = "<group>"; };
 		62284C3E99590634F664014A /* STWebLibraryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STWebLibraryService.swift; sourceTree = "<group>"; };
 		6281805D9CB9F4ABFA345680 /* STSpotifyUIElements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyUIElements.swift; sourceTree = "<group>"; };
+		6480BD01F9BD45BEE08B4771 /* ProbeHooks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeHooks.swift; sourceTree = "<group>"; };
 		65194DCCD7574A5B17EC1802 /* PreviewSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewSupport.swift; sourceTree = "<group>"; };
 		693EBA4D75BAD2BB2886253F /* PlaylistDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistDetailViewModel.swift; sourceTree = "<group>"; };
 		6E4FDB793E436E378DCB0D9A /* STTweakEntry.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = STTweakEntry.m; sourceTree = "<group>"; };
@@ -312,15 +321,18 @@
 		A5C204C6226B401B464B5AF4 /* BracketButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BracketButton.swift; sourceTree = "<group>"; };
 		AADB0BF2BE398D158355907B /* STPerfLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STPerfLogger.swift; sourceTree = "<group>"; };
 		AB8F3F4DCB804F764CBCCE5D /* MockAuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthService.swift; sourceTree = "<group>"; };
+		ABAA9280630C3C3239B6CFAA /* SptTermTweak-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "SptTermTweak-Bridging-Header.h"; sourceTree = "<group>"; };
 		AD444CCD4216877E064CB9DB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AD900004A9A0031444DCB2BE /* STPKCE.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STPKCE.swift; sourceTree = "<group>"; };
 		AF450480668EF827CF67F844 /* STLyricsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STLyricsService.swift; sourceTree = "<group>"; };
 		AFBAEC9F0BECDC2804D5A14A /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		B822A4461E2B69B85A890E82 /* LibraryServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryServiceProtocol.swift; sourceTree = "<group>"; };
+		B89414773FA577562DCA1E0B /* SptProbeFiles.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SptProbeFiles.m; sourceTree = "<group>"; };
 		BA143C63C628F88758B04263 /* AudioPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPreset.swift; sourceTree = "<group>"; };
 		BBB94F4B0B1EAEB28265EA4A /* STCachedPlaylist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STCachedPlaylist.swift; sourceTree = "<group>"; };
 		BC1B1D74EBAB65A8A2A19F3A /* STOpenedPlaylistTracks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STOpenedPlaylistTracks.swift; sourceTree = "<group>"; };
 		BC2C1648466996E5A9A89EC1 /* AppRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRoute.swift; sourceTree = "<group>"; };
+		BE2680294B8453F5DA10231A /* ProbeUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeUI.swift; sourceTree = "<group>"; };
 		BE3592AE0EB4C00174571527 /* ShellMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShellMetrics.swift; sourceTree = "<group>"; };
 		BFA3822A21C1AFC6ECDEFB6E /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		C0FEFFB20ACA6691C5F55E85 /* AudioPresetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPresetStore.swift; sourceTree = "<group>"; };
@@ -342,6 +354,7 @@
 		D66DB67E7A546519EE037F55 /* STSpotifyDTOs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyDTOs.swift; sourceTree = "<group>"; };
 		DA8437418040A15A129D5386 /* STExecCommands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STExecCommands.swift; sourceTree = "<group>"; };
 		DC83705B6B27AA50FE253FAA /* TerminalType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalType.swift; sourceTree = "<group>"; };
+		E098B3D1A08B567813390C9C /* SptProbe.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SptProbe.h; sourceTree = "<group>"; };
 		E0B7676F1C95F47008D2FB72 /* TerminalHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalHeader.swift; sourceTree = "<group>"; };
 		E11BAC18DD8E1B91675FBFEF /* NowPlayingMetadataPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingMetadataPanel.swift; sourceTree = "<group>"; };
 		E1F07243B22B472C1EB4FED7 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
@@ -350,6 +363,7 @@
 		E8CAAB22509F7EF72B170DCA /* STMediaRemoteModeLadder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STMediaRemoteModeLadder.swift; sourceTree = "<group>"; };
 		EB3FDD189DC512C050672601 /* STSpotifyWebAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STSpotifyWebAPI.swift; sourceTree = "<group>"; };
 		EBD73A9DD1A401D8507BC11C /* EQBand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EQBand.swift; sourceTree = "<group>"; };
+		ECE283BC99F053E7F1E454AC /* SptProbeLog.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SptProbeLog.m; sourceTree = "<group>"; };
 		EDF9944E55A4EDEA98BA68EC /* NowPlayingPanels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingPanels.swift; sourceTree = "<group>"; };
 		F06BDA012DED1C50A91BCE7E /* STMRStateDump.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STMRStateDump.swift; sourceTree = "<group>"; };
 		F42BD735FAFDE120435103B1 /* ASCIIRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASCIIRule.swift; sourceTree = "<group>"; };
@@ -532,6 +546,13 @@
 			isa = PBXGroup;
 			children = (
 				AB8F3F4DCB804F764CBCCE5D /* MockAuthService.swift */,
+				6480BD01F9BD45BEE08B4771 /* ProbeHooks.swift */,
+				BE2680294B8453F5DA10231A /* ProbeUI.swift */,
+				E098B3D1A08B567813390C9C /* SptProbe.h */,
+				B89414773FA577562DCA1E0B /* SptProbeFiles.m */,
+				ECE283BC99F053E7F1E454AC /* SptProbeLog.m */,
+				5CD3D155B903C1BCE8C11E54 /* SptProbeNet.m */,
+				ABAA9280630C3C3239B6CFAA /* SptTermTweak-Bridging-Header.h */,
 				D29306EAC99E354CC0664BCC /* STAudioTweaksService.swift */,
 				CB8E033852E8A5AD89B124CD /* STInProcessArtworkService.swift */,
 				C21DBD54251EFE14B2C495A8 /* STInProcessPlayerService.swift */,
@@ -677,11 +698,24 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		100A4AF3E976F504F05858CF /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DC7D309F44D442601F0D8B34 /* SptProbe.h in Headers */,
+				E3BC95734558B41A50C9911A /* SptTermTweak-Bridging-Header.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
 		40F6EDD94200461C208C4054 /* SptTermTweak */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = B2017FAB7721CA841C8F5FD0 /* Build configuration list for PBXNativeTarget "SptTermTweak" */;
 			buildPhases = (
+				100A4AF3E976F504F05858CF /* Headers */,
 				85E39118DC1E851152D42D87 /* Sources */,
 			);
 			buildRules = (
@@ -924,6 +958,8 @@
 				278D05DD1E4DDBC255E97462 /* PlaylistDetailView.swift in Sources */,
 				ED151C704247F72AE5F72043 /* PlaylistDetailViewModel.swift in Sources */,
 				0F067ED1F4DD27BD07683437 /* PreviewSupport.swift in Sources */,
+				EC89BAC3EE9A6540FD84AE45 /* ProbeHooks.swift in Sources */,
+				5CB035EBC133C777F0846F45 /* ProbeUI.swift in Sources */,
 				83B99817B73C5DA3E6DF243C /* Radii.swift in Sources */,
 				A10E74F3B0E8C1103223F2EF /* RootView.swift in Sources */,
 				BE68FBBCD75925EBFCCD7888 /* RootView_Previews.swift in Sources */,
@@ -968,6 +1004,9 @@
 				3E0D2CB03C00A3C4CF1866D5 /* ShellMetrics.swift in Sources */,
 				B76C1C772F755435B7612FC1 /* Spacing.swift in Sources */,
 				B3B19CC3D24CF57898E76251 /* SpectrumBars.swift in Sources */,
+				AAFA6A5BE2975D40A59BED05 /* SptProbeFiles.m in Sources */,
+				24BE5EBD47A5DDBF8E88F82C /* SptProbeLog.m in Sources */,
+				EA57BC655C2A1BAFEA56D4B4 /* SptProbeNet.m in Sources */,
 				056C099AED74563601DDEC4C /* StatusPill.swift in Sources */,
 				8BADC5B22D589EAFB932041B /* TabItem.swift in Sources */,
 				0490FD88F399DF29DC651BEB /* TemporaryPlaceholders.swift in Sources */,
@@ -1112,11 +1151,14 @@
 					AVFoundation,
 					"-framework",
 					MediaPlayer,
+					"-framework",
+					Security,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.aditya.SptTermTweak;
 				PRODUCT_NAME = SptTermTweak;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "SptTermTweak/SptTermTweak-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -1144,11 +1186,14 @@
 					AVFoundation,
 					"-framework",
 					MediaPlayer,
+					"-framework",
+					Security,
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.aditya.SptTermTweak;
 				PRODUCT_NAME = SptTermTweak;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
+				SWIFT_OBJC_BRIDGING_HEADER = "SptTermTweak/SptTermTweak-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
